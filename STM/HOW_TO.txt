@@ -1,0 +1,28 @@
+Set path to JLink GDB :
+Eclipse menu -> Window -> Preferences -> MCU -> Global SEGGER J-Link Path
+/usr/bin
+JLinkGDBServerCLExe
+
+Device name : 
+https://www.segger.com/products/debug-probes/j-link/technology/cpus-and-devices/overview-of-supported-cpus-and-devices/
+STM32F746NG
+
+Test :
+JLinkGDBServerCLExe -if swd -device STM32F746NG \
+-endian little -speed auto \
+-port 2331 -swoport 2332 -telnetport 2333 \
+-vd -ir -localhostonly 1 -singlerun -strict -nogui
+
+Trouble :
+Truncated register 16 in remote 'g' packet
+
+Eclipse menu -> Window -> Preferences -> C/C++ -> Build -> Build variables
+change variable :
+openstm32_compiler_path
+from
+/home/constantine/Ac6/SystemWorkbench/plugins/fr.ac6.mcu.externaltools.arm-none.linux64_1.17.0.201812190825/tools/compiler/bin
+to
+/media/constantine/Install/STM/gcc-arm-none-eabi-9-2020-q2-update/bin
+
+Eclipse menu -> Window -> Preferences -> C/C++ -> Debug -> GDB -> GDB debugger :
+/media/constantine/Install/STM/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gdb
