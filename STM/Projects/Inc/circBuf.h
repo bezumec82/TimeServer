@@ -1,15 +1,36 @@
 #pragma once
 
-#define CIRC_BUF_SIZE	512
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <stdbool.h>
+
+#define CIRC_BUF_SIZE	1024
+#define DYNAMIC_BUF		false
+#define STATIC_BUF		true
+
+#if (!(DYNAMIC_BUF ^ STATIC_BUF))
+# error "Wrong config"
+#endif
 
 struct CircBuf
 {
-	uint8_t buf[CIRC_BUF_SIZE];
+#if DYNAMIC_BUF
+	uint8_t * buf;
+#elif STATIC_BUF
+	//One byte for the protection symbol
+	uint8_t buf[CIRC_BUF_SIZE + 1];
+#else
+# error "Type of buffer is not set"
+#endif
+	uint32_t size;
 	uint8_t * head;
 	uint8_t * tail;
 };
 
-#define INIT_CIRC_BUF(cBuf) \
-	cBuf.head = &cBuf.buf[0]; 	\
-	cBuf.tail = &cBuf.buf[0];	\
-	memset(cBuf.buf, 0x0, CIRC_BUF_SIZE);
+
+/*--- Function prototypes ---*/
+int32_t initCircBuf(struct CircBuf * cBuf, size_t size);
+uint8_t * circBufPut(struct CircBuf * cBuf, uint8_t * data, size_t size);
+uint32_t availableData(struct CircBuf * cBuf);
+uint8_t * circBufGet(struct CircBuf * cBuf, uint8_t * data, size_t size);

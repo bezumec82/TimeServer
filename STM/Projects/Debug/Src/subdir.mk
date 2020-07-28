@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Src/NMEA_parser.c \
+../Src/circBuf.c \
 ../Src/freertos.c \
 ../Src/main.c \
 ../Src/stm32f7xx_hal_msp.c \
@@ -12,6 +13,7 @@ C_SRCS += \
 ../Src/stm32f7xx_it.c \
 ../Src/syscalls.c \
 ../Src/system_stm32f7xx.c \
+../Src/uart.c \
 ../Src/usb_device.c \
 ../Src/usbd_cdc_if.c \
 ../Src/usbd_conf.c \
@@ -19,6 +21,7 @@ C_SRCS += \
 
 OBJS += \
 ./Src/NMEA_parser.o \
+./Src/circBuf.o \
 ./Src/freertos.o \
 ./Src/main.o \
 ./Src/stm32f7xx_hal_msp.o \
@@ -26,6 +29,7 @@ OBJS += \
 ./Src/stm32f7xx_it.o \
 ./Src/syscalls.o \
 ./Src/system_stm32f7xx.o \
+./Src/uart.o \
 ./Src/usb_device.o \
 ./Src/usbd_cdc_if.o \
 ./Src/usbd_conf.o \
@@ -33,6 +37,7 @@ OBJS += \
 
 C_DEPS += \
 ./Src/NMEA_parser.d \
+./Src/circBuf.d \
 ./Src/freertos.d \
 ./Src/main.d \
 ./Src/stm32f7xx_hal_msp.d \
@@ -40,6 +45,7 @@ C_DEPS += \
 ./Src/stm32f7xx_it.d \
 ./Src/syscalls.d \
 ./Src/system_stm32f7xx.d \
+./Src/uart.d \
 ./Src/usb_device.d \
 ./Src/usbd_cdc_if.d \
 ./Src/usbd_conf.d \

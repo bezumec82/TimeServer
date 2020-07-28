@@ -25,8 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
-#include "circBuf.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define UART_RX_TIMEOUT_MS 	1000
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -60,12 +59,12 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart7;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart6;
-DMA_HandleTypeDef hdma_uart7_rx;
 DMA_HandleTypeDef hdma_uart7_tx;
+DMA_HandleTypeDef hdma_uart7_rx;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
-DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
+DMA_HandleTypeDef hdma_usart6_rx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -161,8 +160,7 @@ void RecvFromPC(void *argument);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	INIT_CIRC_BUF(cBufGPSrecv);
-	INIT_CIRC_BUF(cBufPCrecv);
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -178,7 +176,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+	initCircBuf(&cBufGPSrecv, CIRC_BUF_SIZE);
+	initCircBuf(&cBufPCrecv, CIRC_BUF_SIZE);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -208,14 +207,15 @@ int main(void)
 
   /* Create the semaphores(s) */
   /* creation of GPS_RX_sema */
-  GPS_RX_semaHandle = osSemaphoreNew(1, 1, &GPS_RX_sema_attributes);
+  GPS_RX_semaHandle = osSemaphoreNew(1, 0, &GPS_RX_sema_attributes);
 
   /* creation of PC_RX_sema */
-  PC_RX_semaHandle = osSemaphoreNew(1, 1, &PC_RX_sema_attributes);
+  PC_RX_semaHandle = osSemaphoreNew(1, 0, &PC_RX_sema_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
-  NMEA_parser_semaHandle = osSemaphoreNew(1, 1, &NMEA_parser_sema_attributes);
+  NMEA_GPS_parser_semaHandle = osSemaphoreNew(1, 0, &NMEA_GPS_parser_sema_attributes);
+  NMEA_PC_parser_semaHandle = osSemaphoreNew(1, 0, &NMEA_PC_parser_sema_attributes);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -655,7 +655,7 @@ static void MX_UART7_Init(void)
 
   /* USER CODE END UART7_Init 1 */
   huart7.Instance = UART7;
-  huart7.Init.BaudRate = 115200;
+  huart7.Init.BaudRate = 230400;
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;
@@ -921,11 +921,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void vApplicationMallocFailedHook( void )
+{
+    printf( "Allocation failed.\r\n" );
+}
 /**
   * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
   */
 int _write(int fd, char * ptr, int len)
 {
@@ -967,12 +968,14 @@ void SendToGPS(void *argument)
   /* Infinite loop */
   for(;;)
   {
+#if UART_TEST
 		uint8_t aTxBuffer[] = "Data to GPS\r\n";
 		if(HAL_UART_Transmit_DMA(uartForGPS, (uint8_t*)aTxBuffer, strlen((char*)aTxBuffer))!= HAL_OK)
 		{
 			Error_Handler();
 		}
-		//osDelay(1000); //once per second
+#endif
+		osDelay(1000); //once per second
   }
   /* USER CODE END SendToGPS */
 }
@@ -987,37 +990,16 @@ void SendToGPS(void *argument)
 void RecvFromGPS(void *argument)
 {
   /* USER CODE BEGIN RecvFromGPS */
+	struct UartData uData = {
+		.cBuf 				= &cBufGPSrecv,
+		.uartHandle 		= uartForGPS, //pointer underneath
+		.rxSemaHandle 		= &GPS_RX_semaHandle,
+		.parseSemaHandle 	= &NMEA_GPS_parser_semaHandle
+	};
   /* Infinite loop */
 	for(;;)
 	{
-
-		if(HAL_UART_Receive_DMA(uartForGPS, (uint8_t*)cBufGPSrecv.head, NMEA_MIN_MSG_SIZE)!= HAL_OK)
-		{
-			Error_Handler();
-		}
-		/* Try to obtain the semaphore */
-		/* Try to obtain the semaphore */
-		osStatus_t status = osSemaphoreAcquire(GPS_RX_semaHandle , \
-				UART_RX_TIMEOUT_MS/portTICK_PERIOD_MS);
-		switch(status)
-		{
-			case osOK :
-			{
-				printf("PCbuf, color, text, ..._RX sema recvd.\r\n");
-				break;
-			}
-			case osErrorTimeout :
-			{
-				HAL_UART_AbortReceive_IT(uartForGPS);
-				printf("%s : Again.\r\n", __func__);
-				break;
-			}
-			default :
-			{
-				printf("Unhandled error.\r\n");
-				break;
-			}
-		} //end switch
+		recvHandler(&uData);
 	} //end for
   /* USER CODE END RecvFromGPS */
 }
@@ -1035,12 +1017,14 @@ void SendToPC(void *argument)
   /* Infinite loop */
   for(;;)
   {
+#if UART_TEST
 		uint8_t aTxBuffer[] = "Data to PC\r\n";
 		if(HAL_UART_Transmit_DMA(uartForPC, (uint8_t*)aTxBuffer, strlen((char*)aTxBuffer))!= HAL_OK)
 		{
 			Error_Handler();
 		}
-		//osDelay(1000); //once per second
+#endif
+		osDelay(1000); //once per second
   }
   /* USER CODE END SendToPC */
 }
@@ -1055,36 +1039,16 @@ void SendToPC(void *argument)
 void RecvFromPC(void *argument)
 {
   /* USER CODE BEGIN RecvFromPC */
+	struct UartData uData = {
+		.cBuf 				= &cBufPCrecv,
+		.uartHandle 		= uartForPC, //pointer underneath
+		.rxSemaHandle 		= &PC_RX_semaHandle,
+		.parseSemaHandle 	= &NMEA_PC_parser_semaHandle
+	};
   /* Infinite loop */
   for(;;)
   {
-		uint8_t aRxBuffer[8] = "";
-		if(HAL_UART_Receive_DMA(uartForPC, (uint8_t*)aRxBuffer, sizeof(aRxBuffer))!= HAL_OK)
-		{
-			Error_Handler();
-		}
-		/* Try to obtain the semaphore */
-		osStatus_t status = osSemaphoreAcquire(PC_RX_semaHandle , \
-				UART_RX_TIMEOUT_MS/portTICK_PERIOD_MS);
-		switch(status)
-		{
-			case osOK :
-			{
-				printf("PC_RX sema recvd.\r\n");
-				break;
-			}
-			case osErrorTimeout :
-			{
-				HAL_UART_AbortReceive_IT(uartForPC);
-				printf("%s : Again.\r\n", __func__);
-				break;
-			}
-			default :
-			{
-				printf("Unhandled error.\r\n");
-				break;
-			}
-		} //end switch
+	  recvHandler(&uData);
   }
   /* USER CODE END RecvFromPC */
 }
