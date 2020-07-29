@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "cmsis_os.h"
+
 #define CIRC_BUF_SIZE	1024
 #define DYNAMIC_BUF		false
 #define STATIC_BUF		true
@@ -26,6 +28,7 @@ struct CircBuf
 	uint32_t size;
 	uint8_t * head;
 	uint8_t * tail;
+	osMutexId_t lock; //collective access of pointers in 'availableData'
 };
 
 

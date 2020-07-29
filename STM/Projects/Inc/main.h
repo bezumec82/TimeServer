@@ -36,7 +36,9 @@ extern "C" {
 #include <stdbool.h>
 #include "circBuf.h"
 #include "uart.h"
-#include "NMEA_parser.h"
+#include "debug.h"
+#include "memory.h"
+#include "NMEAmsgExtractor.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

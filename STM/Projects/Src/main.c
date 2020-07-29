@@ -105,22 +105,27 @@ const osThreadAttr_t FromPC_thrd_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 128 * 4
 };
-/* Definitions for GPS_RX_sema */
-osSemaphoreId_t GPS_RX_semaHandle;
-const osSemaphoreAttr_t GPS_RX_sema_attributes = {
-  .name = "GPS_RX_sema"
-};
-/* Definitions for PC_RX_sema */
-osSemaphoreId_t PC_RX_semaHandle;
-const osSemaphoreAttr_t PC_RX_sema_attributes = {
-  .name = "PC_RX_sema"
-};
 /* USER CODE BEGIN PV */
-struct CircBuf cBufGPSrecv;
-struct CircBuf cBufPCrecv;
+struct CircBuf cBufGPSrecv; //for data from GPS
+struct CircBuf cBufPCrecv; 	//for data from PC
 UART_HandleTypeDef * uartForPC = &huart7;
 UART_HandleTypeDef * uartForGPS	= &huart6;
 UART_HandleTypeDef * uartPrintf	= &huart1;
+
+/* Flags */
+bool uartForPC_isSending = false;
+
+/* Definitions for GPS_RX_sema */
+osSemaphoreId_t gpsRx_semaHandle;
+const osSemaphoreAttr_t gpsRx_semaAttrs = {
+  .name = "GPS RX sema"
+};
+/* Definitions for PC_RX_sema */
+osSemaphoreId_t pcRx_semaHandle;
+const osSemaphoreAttr_t pcRx_semaAttrs = {
+  .name = "PC RX sema"
+};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -178,6 +183,7 @@ int main(void)
   /* USER CODE BEGIN SysInit */
 	initCircBuf(&cBufGPSrecv, CIRC_BUF_SIZE);
 	initCircBuf(&cBufPCrecv, CIRC_BUF_SIZE);
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -205,17 +211,15 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
-  /* Create the semaphores(s) */
-  /* creation of GPS_RX_sema */
-  GPS_RX_semaHandle = osSemaphoreNew(1, 0, &GPS_RX_sema_attributes);
-
-  /* creation of PC_RX_sema */
-  PC_RX_semaHandle = osSemaphoreNew(1, 0, &PC_RX_sema_attributes);
-
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
-  NMEA_GPS_parser_semaHandle = osSemaphoreNew(1, 0, &NMEA_GPS_parser_sema_attributes);
-  NMEA_PC_parser_semaHandle = osSemaphoreNew(1, 0, &NMEA_PC_parser_sema_attributes);
+  gpsRx_semaHandle = osSemaphoreNew(1, 0, &gpsRx_semaAttrs);
+  gpsNMEAmsgExtrr_semaHandle = osSemaphoreNew(1, 0, &gpsNMEAmsgExtrr_semaAttrs);
+
+  pcRx_semaHandle = osSemaphoreNew(1, 0, &pcRx_semaAttrs);
+  pcNMEAmsgExtrr_semaHandle = osSemaphoreNew(1, 0, &pcNMEAmsgExtrr_semaAttrs);
+
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -244,7 +248,13 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  NMEA_parser_thrdHandle = osThreadNew(NMEA_parser, NULL, &NMEA_parser_thrd_attributes);
+
+  extern const osThreadAttr_t gpsNMEAmsgExtrr_thrdAtts;
+  extern osThreadId_t gpsNMEAmsgExtrr_thrdHandle;
+  gpsNMEAmsgExtrr_thrdHandle = osThreadNew(gpsNMEAmsgExtractor, NULL, &gpsNMEAmsgExtrr_thrdAtts);
+
+  //extern const osThreadAttr_t pcNMEAmsgExtrr_thrdAtts;
+  //pcNMEAmsgExtrr_thrdHandle = osThreadNew(pcNMEAmsgExtrr, NULL, &pcNMEAmsgExtrr_thrdAtts);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -993,8 +1003,8 @@ void RecvFromGPS(void *argument)
 	struct UartData uData = {
 		.cBuf 				= &cBufGPSrecv,
 		.uartHandle 		= uartForGPS, //pointer underneath
-		.rxSemaHandle 		= &GPS_RX_semaHandle,
-		.parseSemaHandle 	= &NMEA_GPS_parser_semaHandle
+		.rxSemaHandle 		= &gpsRx_semaHandle,
+		.parseSemaHandle 	= &gpsNMEAmsgExtrr_semaHandle
 	};
   /* Infinite loop */
 	for(;;)
@@ -1042,8 +1052,8 @@ void RecvFromPC(void *argument)
 	struct UartData uData = {
 		.cBuf 				= &cBufPCrecv,
 		.uartHandle 		= uartForPC, //pointer underneath
-		.rxSemaHandle 		= &PC_RX_semaHandle,
-		.parseSemaHandle 	= &NMEA_PC_parser_semaHandle
+		.rxSemaHandle 		= &pcRx_semaHandle,
+		.parseSemaHandle 	= &pcNMEAmsgExtrr_semaHandle
 	};
   /* Infinite loop */
   for(;;)

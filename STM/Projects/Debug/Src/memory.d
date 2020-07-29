@@ -1,5 +1,5 @@
-Src/circBuf.o: ../Src/circBuf.c \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/circBuf.h \
+Src/memory.o: ../Src/memory.c \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/FreeRTOSConfig.h \
@@ -12,7 +12,7 @@ Src/circBuf.o: ../Src/circBuf.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/circBuf.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 

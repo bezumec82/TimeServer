@@ -44,7 +44,6 @@ Src/usbd_conf.o: ../Src/usbd_conf.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/usbd_conf.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/circBuf.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/FreeRTOSConfig.h \
@@ -56,7 +55,10 @@ Src/usbd_conf.o: ../Src/usbd_conf.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEA_parser.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
@@ -153,8 +155,6 @@ Src/usbd_conf.o: ../Src/usbd_conf.c \
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/circBuf.h:
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h:
-
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
@@ -177,7 +177,13 @@ Src/usbd_conf.o: ../Src/usbd_conf.c \
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEA_parser.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h:
+
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h:
+
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h:
+
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
 

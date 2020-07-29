@@ -20,6 +20,8 @@ int32_t initCircBuf(struct CircBuf * cBuf, size_t size)
 	cBuf->head = &cBuf->buf[0];
 	cBuf->tail = &cBuf->buf[0];
 
+	cBuf->lock = osMutexNew(NULL);
+
 	return 0;
 }
 
@@ -67,17 +69,25 @@ uint8_t * circBufPut(struct CircBuf * cBuf, uint8_t * data, size_t size)
 	return cBuf->head;
 }
 
+/*!
+ * @brief Shows how much data available in the
+ * circular buffer.
+ * @note Uses lock inside.
+ */
 uint32_t availableData(struct CircBuf * cBuf)
 {
+	osMutexAcquire(cBuf->lock, osWaitForever);
+	uint32_t retVal = 0;
 	if(cBuf->tail < cBuf->head)
 	{
-		return (cBuf->head - cBuf->tail);
+		retVal = cBuf->head - cBuf->tail;
 	}
 	if(cBuf->tail > cBuf->head)
 	{
-		return (cBuf->size - (cBuf->tail - cBuf->head));
+		retVal = cBuf->size - (cBuf->tail - cBuf->head);
 	}
-	return 0;
+	osMutexRelease(cBuf->lock);
+	return retVal;
 }
 
 /*!
@@ -94,7 +104,7 @@ uint8_t * circBufGet(struct CircBuf * cBuf, uint8_t * data, size_t size)
 		printf("Wrong arguments.\r\n");
 		return NULL;
 	}
-
+	//TODO : Repeated check possible to optimize
 	if(size > availableData(cBuf))
 	{
 		printf("Data to get bigger than available.\r\n");

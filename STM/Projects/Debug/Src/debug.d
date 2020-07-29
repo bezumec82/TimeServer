@@ -1,6 +1,5 @@
-Src/NMEA_parser.o: ../Src/NMEA_parser.c \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEA_parser.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h \
+Src/debug.o: ../Src/debug.c \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/stm32f7xx_hal_conf.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h \
@@ -41,24 +40,9 @@ Src/NMEA_parser.o: ../Src/NMEA_parser.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart_ex.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/circBuf.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/FreeRTOSConfig.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEA_parser.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 
@@ -141,29 +125,3 @@ Src/NMEA_parser.o: ../Src/NMEA_parser.c \
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/circBuf.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/FreeRTOSConfig.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/portable.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
-
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:

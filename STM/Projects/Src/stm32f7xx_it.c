@@ -341,20 +341,33 @@ void UART7_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 #include "cmsis_os.h"
-extern osSemaphoreId_t PC_RX_semaHandle;
-extern osSemaphoreId_t GPS_RX_semaHandle;
+extern osSemaphoreId_t pcRx_semaHandle;
+extern osSemaphoreId_t gpsRx_semaHandle;
+
+extern UART_HandleTypeDef * uartForPC;
+extern UART_HandleTypeDef * uartForGPS;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart == &huart7)
+	if(huart == uartForPC)
 	{
-		osSemaphoreRelease(PC_RX_semaHandle);
+		osSemaphoreRelease(pcRx_semaHandle);
 	}
-	if(huart == &huart6)
+	if(huart == uartForGPS)
 	{
 
-		osSemaphoreRelease(GPS_RX_semaHandle);
+		osSemaphoreRelease(gpsRx_semaHandle);
 	}
 }
+
+extern bool uartForPC_isSending;
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart == uartForPC)
+	{
+		uartForPC_isSending = false;
+	}
+}
+
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
