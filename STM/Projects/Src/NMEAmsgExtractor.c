@@ -25,7 +25,14 @@ const osSemaphoreAttr_t pcNMEAmsgExtrr_semaAttrs = {
   .name = "NMEA from PC received"
 };
 
+struct Node * gpsNMEAMsgList;
+struct Node * pcNMEAMsgList;
+
+/*--- End global data ---*/
+
+/*--- Exported symbols ---*/
 extern struct CircBuf cBufGPSrecv;
+extern struct CircBuf cBufPCrecv;
 
 /*!
  * @brief This data should pertain across different
@@ -54,7 +61,7 @@ void msgExtractor(	uint8_t * src, size_t srcSize,
 #endif
 	for( ;srcIdx < srcSize; srcIdx++)
 	{
-		if( (state->startFound) && (src[srcIdx] == '$') )
+		if( (state->startFound) && (src[srcIdx] == NMEA_START_CHAR) )
 		{
 			debug("Broken message. Second start.\r\n");
 #if DEBUG_EXTRACTOR //Gives clear riding of buffer
@@ -63,7 +70,7 @@ void msgExtractor(	uint8_t * src, size_t srcSize,
 			dst->bufIdx = 0;
 		}
 
-		if( (!state->startFound) && (src[srcIdx] == '$') )
+		if( (!state->startFound) && (src[srcIdx] == NMEA_START_CHAR) )
 		{
 			state->startFound = true;
 		}
@@ -116,27 +123,19 @@ void msgExtractor(	uint8_t * src, size_t srcSize,
 /* When data is in circular buffer, semaphore will be given */
 void gpsNMEAmsgExtractor(void *argument)
 {
-//	bool startFound = false;
-
 	struct ExtrrState extrrState =
 	{
 		.startFound = false,
 		.lastSrcSymbol = 0x00
 	};
 
-	struct Node * head = initList(NMEA_MSG_MAX_SIZE);
-	int idx = 0;
-	for(idx = 1 /*exclude head node*/; idx < NMEA_MSG_LIST_LEN; idx++)
-	{
-		addNode(head);
-	}
-
 	/* Infinite loop */
 	for(;;)
 	{
 		/* Try to obtain the semaphore */
-		osStatus_t semaStatus = osSemaphoreAcquire(gpsNMEAmsgExtrr_semaHandle , \
-				PARSER_SEMA_TIMEOUT/portTICK_PERIOD_MS);
+		osStatus_t semaStatus = \
+				osSemaphoreAcquire(gpsNMEAmsgExtrr_semaHandle , \
+						PARSER_SEMA_TIMEOUT/portTICK_PERIOD_MS);
 		size_t size = availableData(&cBufGPSrecv);
 		switch(semaStatus)
 		{
@@ -153,65 +152,18 @@ void gpsNMEAmsgExtractor(void *argument)
 
 				circBufGet(&cBufGPSrecv, data, size);
 				msgExtractor(	data , size,
-								&head,
+								&gpsNMEAMsgList,
 								&extrrState);
-#if(0)
-#if(0) //bare debug
-				HAL_StatusTypeDef uartStatus = HAL_UART_Transmit_DMA(uartForPC, data, size);
-				if(uartStatus!= HAL_OK)static uint8_t lastSymbol = 0x00;
+#if(TEST_RUN) //bare debug
+				HAL_StatusTypeDef uartStatus = \
+						HAL_UART_Transmit_DMA(uartForPC, data, size);
+				if(uartStatus!= HAL_OK)
 				{
 					printf("UART transmit error : %d.\r\n", uartStatus);
 				}
-#else
-				/*------------------------------*/
-				/*--- Extracts full messages ---*/
-				/*------------------------------*/
-				uint32_t dataIdx = 0;
-				for( ;dataIdx < size; dataIdx++)
-				{
-					if( (startFound) && (data[dataIdx] == '$') )
-					{
-						debug("Broken message. Second start.\r\n");
-						head->buf[head->bufIdx] = 0;
-					}
-
-					if( (!startFound) && (data[dataIdx] == '$') )
-					{
-						startFound = true;
-					}
-
-					if(startFound)
-					{
-						head->buf[head->bufIdx] = data[dataIdx];
-						head->bufIdx++;
-						if(head->bufIdx == head->bufSize)
-						{
-							debug("Broken message. Too big.\r\n");
-							head->bufIdx = 0;
-							startFound = false;
-						}
-						//look for message end
-						static uint8_t lastSymbol = 0x00;
-						if( (data[dataIdx] == NMEA_MSG_END_1) && \
-								(lastSymbol == NMEA_MSG_END_0) )
-						{
-							/*--- Debug output---*/
-							HAL_StatusTypeDef uartStatus = \
-									HAL_UART_Transmit_DMA(uartForPC, &head->buf[0], head->bufIdx);
-							if(uartStatus!= HAL_OK)
-							{
-								debug("UART transmit error.\r\n");
-							}
-							//full message found
-							startFound = false;
-							head = head->next; //get next buffer
-						}
-						lastSymbol = data[dataIdx];
-					}
-				} //end for
 #endif
-#endif
-				assert(data[size] == MEM_PROT_SYMBOL && "Data buffer overflow");
+				assert(data[size] == MEM_PROT_SYMBOL && \
+						"Data buffer overflow");
 				vPortFree(data);
 				break;
 			} //end case osOK
@@ -222,6 +174,60 @@ void gpsNMEAmsgExtractor(void *argument)
 				break;
 			}
 		} //end switch(semaStatus)
-		checkProtection(head);
+		checkProtection(gpsNMEAMsgList);
+	}
+}
+
+
+
+/*! @note Obvious code duplication,
+ * but further abstractions are too ugly.
+ */
+void pcNMEAmsgExtractor(void *argument)
+{
+	struct ExtrrState extrrState =
+	{
+		.startFound = false,
+		.lastSrcSymbol = 0x00
+	};
+
+	/* Infinite loop */
+	for(;;)
+	{
+		/* Try to obtain the semaphore */
+		osStatus_t semaStatus = \
+				osSemaphoreAcquire(pcNMEAmsgExtrr_semaHandle , \
+						PARSER_SEMA_TIMEOUT/portTICK_PERIOD_MS);
+		size_t size = availableData(&cBufPCrecv);
+		switch(semaStatus)
+		{
+			case osErrorTimeout :
+			{
+				if(size == 0)
+					break;
+			} //fall through
+			case osOK :
+			{
+				uint8_t * data = pvPortMalloc(size + 1); //include protector
+				if(!data) break; //out of switch cycle
+				data[size] = MEM_PROT_SYMBOL; //protective symbol
+
+				circBufGet(&cBufPCrecv, data, size);
+				msgExtractor(	data , size,
+								&pcNMEAMsgList,
+								&extrrState);
+				assert(data[size] == MEM_PROT_SYMBOL && \
+						"Data buffer overflow");
+				vPortFree(data);
+				break;
+			} //end case osOK
+
+			default :
+			{
+				printf("Unhandled error.\r\n");
+				break;
+			}
+		} //end switch(semaStatus)
+		checkProtection(pcNMEAMsgList);
 	}
 }

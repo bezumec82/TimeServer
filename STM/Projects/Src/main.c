@@ -208,6 +208,27 @@ int main(void)
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
+	/* Heap model initialized above.
+	* So I assume it is safe to ask for heap memory here. */
+
+  	int bufNum = 0;
+
+	extern struct Node * gpsNMEAMsgList;
+	gpsNMEAMsgList = initList(NMEA_MSG_MAX_SIZE);
+	for(bufNum = 1 /*exclude head node*/; \
+		bufNum < NMEA_MSG_LIST_LEN; bufNum++)
+	{
+		addNode(gpsNMEAMsgList);
+	}
+
+	extern struct Node * pcNMEAMsgList;
+	pcNMEAMsgList = initList(NMEA_MSG_MAX_SIZE);
+	for(bufNum = 1 /*exclude head node*/; \
+		bufNum < NMEA_MSG_LIST_LEN; bufNum++)
+	{
+		addNode(pcNMEAMsgList);
+	}
+
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
@@ -251,7 +272,15 @@ int main(void)
 
   extern const osThreadAttr_t gpsNMEAmsgExtrr_thrdAtts;
   extern osThreadId_t gpsNMEAmsgExtrr_thrdHandle;
-  gpsNMEAmsgExtrr_thrdHandle = osThreadNew(gpsNMEAmsgExtractor, NULL, &gpsNMEAmsgExtrr_thrdAtts);
+  gpsNMEAmsgExtrr_thrdHandle = \
+		  osThreadNew(gpsNMEAmsgExtractor, NULL, \
+				  &gpsNMEAmsgExtrr_thrdAtts);
+
+  extern const osThreadAttr_t pcNMEAmsgExtrr_thrdAtts;
+  extern osThreadId_t pcNMEAmsgExtrr_thrdHandle;
+  pcNMEAmsgExtrr_thrdHandle = \
+		  osThreadNew(pcNMEAmsgExtractor, NULL, \
+				  &pcNMEAmsgExtrr_thrdAtts);
 
   //extern const osThreadAttr_t pcNMEAmsgExtrr_thrdAtts;
   //pcNMEAmsgExtrr_thrdHandle = osThreadNew(pcNMEAmsgExtrr, NULL, &pcNMEAmsgExtrr_thrdAtts);
@@ -665,7 +694,7 @@ static void MX_UART7_Init(void)
 
   /* USER CODE END UART7_Init 1 */
   huart7.Instance = UART7;
-  huart7.Init.BaudRate = 230400;
+  huart7.Init.BaudRate = 115200;
   huart7.Init.WordLength = UART_WORDLENGTH_8B;
   huart7.Init.StopBits = UART_STOPBITS_1;
   huart7.Init.Parity = UART_PARITY_NONE;

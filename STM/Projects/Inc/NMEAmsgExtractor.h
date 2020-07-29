@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -9,20 +7,23 @@
 
 #include "main.h"
 
-#define TEST_RUN				true
+/* Send directly to output w/out extraction */
+#define TEST_RUN				false
+
+/* Output to UART extracted packages */
+#define DEBUG_EXTRACTOR			true
+
 #define PARSER_SEMA_TIMEOUT		20
 
+/*--- Parsing related ---*/
 #define NMEA_START_CHAR			'$'
-#define NMEA_MIN_MSG_SIZE		6
-#define NMEA_MSG_LIST_LEN		4
-
 /* NMEA message end sequence is 0x0d->0x0A*/
 #define NMEA_MSG_END_0			0x0d
 #define NMEA_MSG_END_1			0x0a
 
+/*--- Memory related ---*/
+#define NMEA_MSG_LIST_LEN		4
 #define NMEA_MSG_MAX_SIZE		128
-
-#define DEBUG_EXTRACTOR			true
 
 /*--- External global variables ---*/
 extern osSemaphoreId_t gpsNMEAmsgExtrr_semaHandle;
@@ -33,3 +34,4 @@ extern const osSemaphoreAttr_t pcNMEAmsgExtrr_semaAttrs;
 
 /*--- Export functions ---*/
 void gpsNMEAmsgExtractor(void *argument);
+void pcNMEAmsgExtractor(void *argument);
