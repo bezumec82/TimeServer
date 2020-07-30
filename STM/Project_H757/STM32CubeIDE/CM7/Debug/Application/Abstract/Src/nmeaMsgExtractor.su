@@ -1,0 +1,1 @@
+nmeaMsgExtractor.cpp:13:6:void nmeaMsgExtractor(uint8_t*, size_t, Node**, ExtrrState*)	40	static

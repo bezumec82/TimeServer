@@ -1,0 +1,2 @@
+NmeaReceiver.cpp:3:5:int NmeaReceiver::initialize(UART_HandleTypeDef*)	24	static
+NmeaReceiver.cpp:30:6:static void NmeaReceiver::threadFunc(void*)	64	dynamic

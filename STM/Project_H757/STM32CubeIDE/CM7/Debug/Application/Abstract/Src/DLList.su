@@ -1,0 +1,3 @@
+DLList.cpp:3:15:Node* initList(size_t)	24	static
+DLList.cpp:31:15:Node* addNode(Node*)	24	static
+DLList.cpp:64:6:void checkProtection(Node*)	24	static

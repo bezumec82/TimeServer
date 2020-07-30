@@ -26,3 +26,11 @@ to
 
 Eclipse menu -> Window -> Preferences -> C/C++ -> Debug -> GDB -> GDB debugger :
 /media/constantine/Install/STM/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gdb
+
+### Trouble
+Execution end up in 'Default_Handler'
+# Cause
+Not generated ISR for HAL timer.
+
+# Solution
+1) Switch HAL timebase to TIM3

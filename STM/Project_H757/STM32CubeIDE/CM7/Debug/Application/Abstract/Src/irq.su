@@ -1,0 +1,4 @@
+NmeaReceiver.h:30:18:void* NmeaReceiver::getSema()	16	static
+NmeaReceiver.h:34:23:UART_HandleTypeDef* NmeaReceiver::getUart()	16	static
+irq.cpp:7:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	16	static
+irq.cpp:23:6:void HAL_UART_TxCpltCallback(UART_HandleTypeDef*)	16	static

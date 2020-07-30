@@ -1,0 +1,4 @@
+StateMachine.cpp:3:15:static StateMachine& StateMachine::getInstance()	4	static
+StateMachine.cpp:9:6:void StateMachine::post(const StateMachine::Message*)	24	static
+StateMachine.cpp:21:6:void StateMachine::initialize()	16	static
+StateMachine.cpp:29:6:static void StateMachine::threadFunc(void*)	24	static
