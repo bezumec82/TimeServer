@@ -56,7 +56,7 @@ Src/freertos.o: ../Src/freertos.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
@@ -173,6 +173,6 @@ Src/freertos.o: ../Src/freertos.c \
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h:
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h:

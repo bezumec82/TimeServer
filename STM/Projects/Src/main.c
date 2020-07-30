@@ -77,54 +77,35 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 4096 * 4
 };
-/* Definitions for ToGPS_thrd */
-osThreadId_t ToGPS_thrdHandle;
-const osThreadAttr_t ToGPS_thrd_attributes = {
-  .name = "ToGPS_thrd",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
-/* Definitions for FromGPS_thrd */
-osThreadId_t FromGPS_thrdHandle;
-const osThreadAttr_t FromGPS_thrd_attributes = {
-  .name = "FromGPS_thrd",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
-/* Definitions for ToPC_thrd */
-osThreadId_t ToPC_thrdHandle;
-const osThreadAttr_t ToPC_thrd_attributes = {
-  .name = "ToPC_thrd",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
-/* Definitions for FromPC_thrd */
-osThreadId_t FromPC_thrdHandle;
-const osThreadAttr_t FromPC_thrd_attributes = {
-  .name = "FromPC_thrd",
-  .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 128 * 4
-};
 /* USER CODE BEGIN PV */
-struct CircBuf cBufGPSrecv; //for data from GPS
-struct CircBuf cBufPCrecv; 	//for data from PC
-UART_HandleTypeDef * uartForPC = &huart7;
-UART_HandleTypeDef * uartForGPS	= &huart6;
-UART_HandleTypeDef * uartPrintf	= &huart1;
+struct CircBuf pcNmeaRx_cBuf;
+struct CircBuf gpsNmeaRx_cBuf;
+#if(0)
+struct CircBuf pcBinrRx_cBuf;
+struct CircBuf gpsBinrRx_cBuf;
+#endif
+UART_HandleTypeDef * pcNmeaUart = &huart7;
+UART_HandleTypeDef * gpsNmeaUart = &huart6;
+UART_HandleTypeDef * debugUart	= &huart1;
+#if(0)
+UART_HandleTypeDef * pcBinrUart;
+UART_HandleTypeDef * gpsBinrUart;
+#endif
 
 /* Flags */
-bool uartForPC_isSending = false;
+bool pcNmeaUart_isSending = false;
+bool gpsNmeaUart_isSending = false;
+bool debugUart_isSending = false;
 
-/* Definitions for GPS_RX_sema */
-osSemaphoreId_t gpsRx_semaHandle;
-const osSemaphoreAttr_t gpsRx_semaAttrs = {
-  .name = "GPS RX sema"
-};
-/* Definitions for PC_RX_sema */
-osSemaphoreId_t pcRx_semaHandle;
-const osSemaphoreAttr_t pcRx_semaAttrs = {
-  .name = "PC RX sema"
-};
+osSemaphoreId_t gpsNmeaRx_semaHandle;
+osSemaphoreId_t pcNmeaRx_semaHandle;
+#if(0)
+osSemaphoreId_t gpsBinrRx_semaHandle;
+osSemaphoreId_t pcBinrRx_semaHandle;
+#endif
+
+struct Node * gpsNmeaMsgList;
+struct Node * pcNmeaMsgList;
 
 /* USER CODE END PV */
 
@@ -144,12 +125,12 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
-void SendToGPS(void *argument);
-void RecvFromGPS(void *argument);
-void SendToPC(void *argument);
-void RecvFromPC(void *argument);
 
 /* USER CODE BEGIN PFP */
+osThreadId_t pcNmeaRx_thrdHandle;
+osThreadId_t gpsNmeaRx_thrdHandle;
+void pcNmeaRx_thread(void * argument);
+void gpsNmeaRx_thread(void * argument);
 
 /* USER CODE END PFP */
 
@@ -181,8 +162,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-	initCircBuf(&cBufGPSrecv, CIRC_BUF_SIZE);
-	initCircBuf(&cBufPCrecv, CIRC_BUF_SIZE);
 
   /* USER CODE END SysInit */
 
@@ -208,25 +187,23 @@ int main(void)
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
+
 	/* Heap model initialized above.
 	* So I assume it is safe to ask for heap memory here. */
-
   	int bufNum = 0;
-
-	extern struct Node * gpsNMEAMsgList;
-	gpsNMEAMsgList = initList(NMEA_MSG_MAX_SIZE);
+	gpsNmeaMsgList = initList(NMEA_MSG_MAX_SIZE);
+	if(!gpsNmeaMsgList) return EXIT_FAILURE;
 	for(bufNum = 1 /*exclude head node*/; \
 		bufNum < NMEA_MSG_LIST_LEN; bufNum++)
 	{
-		addNode(gpsNMEAMsgList);
+		addNode(gpsNmeaMsgList);
 	}
-
-	extern struct Node * pcNMEAMsgList;
-	pcNMEAMsgList = initList(NMEA_MSG_MAX_SIZE);
+	pcNmeaMsgList = initList(NMEA_MSG_MAX_SIZE);
+	if(!pcNmeaMsgList) return EXIT_FAILURE;
 	for(bufNum = 1 /*exclude head node*/; \
 		bufNum < NMEA_MSG_LIST_LEN; bufNum++)
 	{
-		addNode(pcNMEAMsgList);
+		addNode(pcNmeaMsgList);
 	}
 
   /* add mutexes, ... */
@@ -234,12 +211,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
-  gpsRx_semaHandle = osSemaphoreNew(1, 0, &gpsRx_semaAttrs);
-  gpsNMEAmsgExtrr_semaHandle = osSemaphoreNew(1, 0, &gpsNMEAmsgExtrr_semaAttrs);
-
-  pcRx_semaHandle = osSemaphoreNew(1, 0, &pcRx_semaAttrs);
-  pcNMEAmsgExtrr_semaHandle = osSemaphoreNew(1, 0, &pcNMEAmsgExtrr_semaAttrs);
-
+  gpsNmeaRx_semaHandle = osSemaphoreNew(1, 0, NULL);
+  pcNmeaRx_semaHandle = osSemaphoreNew(1, 0, NULL);
 
   /* USER CODE END RTOS_SEMAPHORES */
 
@@ -255,32 +228,11 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of ToGPS_thrd */
-  ToGPS_thrdHandle = osThreadNew(SendToGPS, NULL, &ToGPS_thrd_attributes);
-
-  /* creation of FromGPS_thrd */
-  FromGPS_thrdHandle = osThreadNew(RecvFromGPS, NULL, &FromGPS_thrd_attributes);
-
-  /* creation of ToPC_thrd */
-  ToPC_thrdHandle = osThreadNew(SendToPC, NULL, &ToPC_thrd_attributes);
-
-  /* creation of FromPC_thrd */
-  FromPC_thrdHandle = osThreadNew(RecvFromPC, NULL, &FromPC_thrd_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+//  pcNmeaRx_thrdHandle = osThreadNew(pcNmeaRx_thread, NULL, NULL);
+  gpsNmeaRx_thrdHandle = osThreadNew(gpsNmeaRx_thread, NULL, NULL);
 
-  extern const osThreadAttr_t gpsNMEAmsgExtrr_thrdAtts;
-  extern osThreadId_t gpsNMEAmsgExtrr_thrdHandle;
-  gpsNMEAmsgExtrr_thrdHandle = \
-		  osThreadNew(gpsNMEAmsgExtractor, NULL, \
-				  &gpsNMEAmsgExtrr_thrdAtts);
-
-  extern const osThreadAttr_t pcNMEAmsgExtrr_thrdAtts;
-  extern osThreadId_t pcNMEAmsgExtrr_thrdHandle;
-  pcNMEAmsgExtrr_thrdHandle = \
-		  osThreadNew(pcNMEAmsgExtractor, NULL, \
-				  &pcNMEAmsgExtrr_thrdAtts);
 
   //extern const osThreadAttr_t pcNMEAmsgExtrr_thrdAtts;
   //pcNMEAmsgExtrr_thrdHandle = osThreadNew(pcNMEAmsgExtrr, NULL, &pcNMEAmsgExtrr_thrdAtts);
@@ -972,6 +924,141 @@ int _write(int fd, char * ptr, int len)
 	HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
 	return len;
 }
+
+void pcNmeaRx_thread(void *argument)
+{
+
+	struct ExtrrState extrrState =
+	{
+		.startFound = false,
+		.lastSrcSymbol = 0x00
+	};
+
+	/* Infinite loop */
+	for(;;)
+	{
+		uint8_t rxBuf[UART_RX_CHUNK + 1] = {}; //1 protection byte
+		if(HAL_UART_Receive_DMA(pcNmeaUart, rxBuf, UART_RX_CHUNK)!= HAL_OK)
+		{
+			printf("Reception error.\r\n");
+		}
+		/* Try to obtain the RX semaphore from DMA IRQ */
+		osStatus_t semaStatus = osSemaphoreAcquire(pcNmeaRx_semaHandle , \
+				UART_RX_TIMEOUT_MS/portTICK_PERIOD_MS);
+		switch(semaStatus)
+		{
+			case osErrorTimeout :
+			{
+				HAL_UART_AbortReceive_IT(pcNmeaRx_semaHandle);
+				//get data from buffer
+				int rxBufIdx = 0;
+				for( ; rxBuf[rxBufIdx] != 0x00; rxBufIdx++)
+				{}
+				if(rxBufIdx) //if data in buffer pass it to the parser
+				{
+					nmeaMsgExtractor(rxBuf, rxBufIdx + 1 /* from idx to amnt */,
+						&pcNmeaMsgList,	&extrrState);
+				}
+				break;
+			} //end case timeout
+			case osOK :
+			{
+				nmeaMsgExtractor(rxBuf, UART_RX_CHUNK /* from idx to amnt */,
+					&pcNmeaMsgList,	&extrrState);
+				break;
+			} //end case ok
+			default :
+			{
+				printf("Unhandled error.\r\n");
+				break;
+			}
+		} //end switch sema status
+		checkProtection(pcNmeaMsgList);
+	} //end for
+}
+
+#define UART_MAX_DELAY_MS	1000
+#define UART_RX_BUF_SIZE    64
+void gpsNmeaRx_thread(void *argument)
+{
+	/* Initialization */
+	uint32_t semaAcqAtmptCnt = 0;
+
+	uint32_t rxBufIdx = 0;
+	uint32_t rxBufSize = UART_RX_BUF_SIZE;
+	uint8_t rxBuf[rxBufSize + 1]; //1 protection byte
+	rxBuf[rxBufSize] = MEM_PROT_SYMBOL;
+
+	struct ExtrrState extrrState =
+	{
+		.startFound = false,
+		.lastSrcSymbol = 0x00
+	};
+
+	/* Ignite transmission cycle */
+reignite:
+	debug("Ignition.\r\n");
+	semaAcqAtmptCnt = 0;
+	rxBufIdx = 0;
+	memset(rxBuf, 0x00, UART_RX_BUF_SIZE); //clear
+	HAL_UART_Receive_DMA(gpsNmeaUart, &rxBuf[0], rxBufSize);
+
+	/* Infinite loop */
+	for(;;)
+	{
+		/* Try to obtain the RX semaphore from DMA IRQ */
+		osStatus_t semaStatus = osSemaphoreAcquire(gpsNmeaRx_semaHandle , \
+				UART_RX_TIMEOUT_MS/portTICK_PERIOD_MS);
+		switch(semaStatus)
+		{
+			case osErrorTimeout : //get what you can at the moment
+			{
+				semaAcqAtmptCnt++;
+				if(semaAcqAtmptCnt == UART_MAX_DELAY_MS/UART_RX_TIMEOUT_MS)
+				{
+					goto reignite;
+				}
+
+				uint32_t avlblData = 0;
+				uint32_t prevIdx = rxBufIdx;
+				//define how much can be read from buffer
+				for( ; (rxBuf[rxBufIdx] != 0x00) && \
+					(rxBufIdx < rxBufSize);
+						rxBufIdx++) //replace 'rxBufIdx' to the new terminator
+				{
+					avlblData++;
+				}
+				if(avlblData) //if data is in buffer, pass it to the parser
+				{
+					nmeaMsgExtractor(&rxBuf[prevIdx], avlblData /* from idx to amnt */,
+						&gpsNmeaMsgList, &extrrState);
+				}
+				break;
+			} //end case timeout
+			case osOK : //semaphore acquired
+			{
+				nmeaMsgExtractor(&rxBuf[rxBufIdx], \
+						rxBufSize - rxBufIdx, \
+							&gpsNmeaMsgList, &extrrState);
+				//next cycle
+				rxBufIdx = 0;
+				memset(rxBuf, 0x00, rxBufSize); //clear
+				semaAcqAtmptCnt = 0;
+				HAL_UART_Receive_DMA(gpsNmeaUart, rxBuf, rxBufSize);
+				break;
+			} //end case ok
+			default :
+			{
+				debug("Unhandled error.\r\n");
+				break;
+			}
+		} //end switch sema status
+		checkProtection(gpsNmeaMsgList);
+		assert( (rxBuf[rxBufSize] == MEM_PROT_SYMBOL) && \
+						"RX buffer overflow");
+	} //end for
+}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -992,104 +1079,6 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */ 
-}
-
-/* USER CODE BEGIN Header_SendToGPS */
-/**
-* @brief Function implementing the ToGPS_thrd thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_SendToGPS */
-void SendToGPS(void *argument)
-{
-  /* USER CODE BEGIN SendToGPS */
-  /* Infinite loop */
-  for(;;)
-  {
-#if UART_TEST
-		uint8_t aTxBuffer[] = "Data to GPS\r\n";
-		if(HAL_UART_Transmit_DMA(uartForGPS, (uint8_t*)aTxBuffer, strlen((char*)aTxBuffer))!= HAL_OK)
-		{
-			Error_Handler();
-		}
-#endif
-		osDelay(1000); //once per second
-  }
-  /* USER CODE END SendToGPS */
-}
-
-/* USER CODE BEGIN Header_RecvFromGPS */
-/**
-* @brief Function implementing the FromGPS_thrd thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_RecvFromGPS */
-void RecvFromGPS(void *argument)
-{
-  /* USER CODE BEGIN RecvFromGPS */
-	struct UartData uData = {
-		.cBuf 				= &cBufGPSrecv,
-		.uartHandle 		= uartForGPS, //pointer underneath
-		.rxSemaHandle 		= &gpsRx_semaHandle,
-		.parseSemaHandle 	= &gpsNMEAmsgExtrr_semaHandle
-	};
-  /* Infinite loop */
-	for(;;)
-	{
-		recvHandler(&uData);
-	} //end for
-  /* USER CODE END RecvFromGPS */
-}
-
-/* USER CODE BEGIN Header_SendToPC */
-/**
-* @brief Function implementing the ToPC_thrd thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_SendToPC */
-void SendToPC(void *argument)
-{
-  /* USER CODE BEGIN SendToPC */
-  /* Infinite loop */
-  for(;;)
-  {
-#if UART_TEST
-		uint8_t aTxBuffer[] = "Data to PC\r\n";
-		if(HAL_UART_Transmit_DMA(uartForPC, (uint8_t*)aTxBuffer, strlen((char*)aTxBuffer))!= HAL_OK)
-		{
-			Error_Handler();
-		}
-#endif
-		osDelay(1000); //once per second
-  }
-  /* USER CODE END SendToPC */
-}
-
-/* USER CODE BEGIN Header_RecvFromPC */
-/**
-* @brief Function implementing the FromPC_thrd thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_RecvFromPC */
-void RecvFromPC(void *argument)
-{
-  /* USER CODE BEGIN RecvFromPC */
-	struct UartData uData = {
-		.cBuf 				= &cBufPCrecv,
-		.uartHandle 		= uartForPC, //pointer underneath
-		.rxSemaHandle 		= &pcRx_semaHandle,
-		.parseSemaHandle 	= &pcNMEAmsgExtrr_semaHandle
-	};
-  /* Infinite loop */
-  for(;;)
-  {
-	  recvHandler(&uData);
-  }
-  /* USER CODE END RecvFromPC */
 }
 
  /**

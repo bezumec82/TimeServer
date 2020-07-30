@@ -341,31 +341,42 @@ void UART7_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 #include "cmsis_os.h"
-extern osSemaphoreId_t pcRx_semaHandle;
-extern osSemaphoreId_t gpsRx_semaHandle;
+extern osSemaphoreId_t pcNmeaRx_semaHandle;
+extern osSemaphoreId_t gpsNmeaRx_semaHandle;
 
-extern UART_HandleTypeDef * uartForPC;
-extern UART_HandleTypeDef * uartForGPS;
+extern UART_HandleTypeDef * pcNmeaUart;
+extern UART_HandleTypeDef * gpsNmeaUart;
+extern UART_HandleTypeDef * debugUart;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart == uartForPC)
+	if(huart == pcNmeaUart)
 	{
-		osSemaphoreRelease(pcRx_semaHandle);
+		osSemaphoreRelease(pcNmeaRx_semaHandle);
 	}
-	if(huart == uartForGPS)
+	if(huart == gpsNmeaUart)
 	{
 
-		osSemaphoreRelease(gpsRx_semaHandle);
+		osSemaphoreRelease(gpsNmeaRx_semaHandle);
 	}
 }
 
-extern bool uartForPC_isSending;
+extern bool pcNmeaUart_isSending;
+extern bool gpsNmeaUart_isSending;
+extern bool debugUart_isSending;
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart == uartForPC)
+	if(huart == pcNmeaUart)
 	{
-		uartForPC_isSending = false;
+		pcNmeaUart_isSending = false;
+	}
+	if(huart == gpsNmeaUart)
+	{
+		gpsNmeaUart_isSending = false;
+	}
+	if(huart == debugUart)
+	{
+		debugUart_isSending = false;
 	}
 }
 

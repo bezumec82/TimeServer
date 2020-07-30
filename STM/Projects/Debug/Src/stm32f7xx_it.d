@@ -56,7 +56,7 @@ Src/stm32f7xx_it.o: ../Src/stm32f7xx_it.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/stm32f7xx_it.h
 
@@ -174,7 +174,7 @@ Src/stm32f7xx_it.o: ../Src/stm32f7xx_it.c \
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h:
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h:
 

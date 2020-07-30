@@ -1,5 +1,5 @@
-Src/NMEAmsgExtractor.o: ../Src/NMEAmsgExtractor.c \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h \
+Src/nmeaMsgExtractor.o: ../Src/nmeaMsgExtractor.c \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/FreeRTOSConfig.h \
@@ -58,7 +58,7 @@ Src/NMEAmsgExtractor.o: ../Src/NMEAmsgExtractor.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 

@@ -58,7 +58,7 @@ Src/usbd_conf.o: ../Src/usbd_conf.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h \
@@ -183,7 +183,7 @@ Src/usbd_conf.o: ../Src/usbd_conf.c \
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h:
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h:
 

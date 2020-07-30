@@ -6,8 +6,8 @@
 #include "circBuf.h"
 
 /* Common part - out of abstraction */
-#define UART_RX_CHUNK		32
-#define UART_RX_TIMEOUT_MS 	1000
+#define UART_RX_CHUNK		64 //gps is always speaking while pc is quite humble
+#define UART_RX_TIMEOUT_MS 	20
 
 /*--- Structures definitions ---*/
 struct UartData

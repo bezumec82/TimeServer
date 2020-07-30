@@ -56,7 +56,7 @@ Src/stm32f7xx_hal_msp.o: ../Src/stm32f7xx_hal_msp.c \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/uart.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/debug.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h \
- /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h \
+ /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h \
  /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h:
@@ -173,6 +173,6 @@ Src/stm32f7xx_hal_msp.o: ../Src/stm32f7xx_hal_msp.c \
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/memory.h:
 
-/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/NMEAmsgExtractor.h:
+/media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/nmeaMsgExtractor.h:
 
 /media/constantine/Work/LEMZ/TimeServer/STM/Projects/Inc/main.h:

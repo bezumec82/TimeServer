@@ -4,12 +4,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Src/NMEAmsgExtractor.c \
 ../Src/circBuf.c \
 ../Src/debug.c \
 ../Src/freertos.c \
 ../Src/main.c \
 ../Src/memory.c \
+../Src/nmeaMsgExtractor.c \
 ../Src/stm32f7xx_hal_msp.c \
 ../Src/stm32f7xx_hal_timebase_tim.c \
 ../Src/stm32f7xx_it.c \
@@ -22,12 +22,12 @@ C_SRCS += \
 ../Src/usbd_desc.c 
 
 OBJS += \
-./Src/NMEAmsgExtractor.o \
 ./Src/circBuf.o \
 ./Src/debug.o \
 ./Src/freertos.o \
 ./Src/main.o \
 ./Src/memory.o \
+./Src/nmeaMsgExtractor.o \
 ./Src/stm32f7xx_hal_msp.o \
 ./Src/stm32f7xx_hal_timebase_tim.o \
 ./Src/stm32f7xx_it.o \
@@ -40,12 +40,12 @@ OBJS += \
 ./Src/usbd_desc.o 
 
 C_DEPS += \
-./Src/NMEAmsgExtractor.d \
 ./Src/circBuf.d \
 ./Src/debug.d \
 ./Src/freertos.d \
 ./Src/main.d \
 ./Src/memory.d \
+./Src/nmeaMsgExtractor.d \
 ./Src/stm32f7xx_hal_msp.d \
 ./Src/stm32f7xx_hal_timebase_tim.d \
 ./Src/stm32f7xx_it.d \

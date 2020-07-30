@@ -22,16 +22,15 @@
 #define NMEA_MSG_END_1			0x0a
 
 /*--- Memory related ---*/
-#define NMEA_MSG_LIST_LEN		4
+#define NMEA_MSG_LIST_LEN		8
 #define NMEA_MSG_MAX_SIZE		128
 
-/*--- External global variables ---*/
-extern osSemaphoreId_t gpsNMEAmsgExtrr_semaHandle;
-extern const osSemaphoreAttr_t gpsNMEAmsgExtrr_semaAttrs;
+struct ExtrrState
+{
+	bool 	startFound; 	//!< Flag shows that symbol '$' was found in 'src' data
+	uint8_t lastSrcSymbol;	//!< Last symbol of processed 'src' data
+};
 
-extern osSemaphoreId_t pcNMEAmsgExtrr_semaHandle;
-extern const osSemaphoreAttr_t pcNMEAmsgExtrr_semaAttrs;
-
-/*--- Export functions ---*/
-void gpsNMEAmsgExtractor(void *argument);
-void pcNMEAmsgExtractor(void *argument);
+void nmeaMsgExtractor(	uint8_t * src, size_t srcSize,
+						struct Node ** dst_ptr,
+						struct ExtrrState * state);

@@ -38,7 +38,7 @@ extern "C" {
 #include "uart.h"
 #include "debug.h"
 #include "memory.h"
-#include "NMEAmsgExtractor.h"
+#include "nmeaMsgExtractor.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
