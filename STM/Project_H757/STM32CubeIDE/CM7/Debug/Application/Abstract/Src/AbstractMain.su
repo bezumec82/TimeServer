@@ -1,4 +1,0 @@
-AbstractMain.cpp:31:5:int _main()	8	static
-AbstractMain.cpp:51:6:void vApplicationMallocFailedHook()	8	static
-AbstractMain.cpp:59:5:int _write(int, char*, int)	24	static
-AbstractMain.cpp:68:13:void TIM1_UP_IRQHandler()	8	static

@@ -1,4 +1,0 @@
-circBuf.cpp:3:9:int32_t initCircBuf(CircBuf*, size_t)	16	static
-circBuf.cpp:35:11:uint8_t* circBufPut(CircBuf*, uint8_t*, size_t)	32	static
-circBuf.cpp:77:10:uint32_t availableData(CircBuf*)	24	static
-circBuf.cpp:100:11:uint8_t* circBufGet(CircBuf*, uint8_t*, size_t)	32	static
