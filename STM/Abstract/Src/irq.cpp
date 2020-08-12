@@ -6,6 +6,14 @@ extern NmeaReceiver gpsNmeaRecv;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
+#if(ECHO_TEST)
+	extern UART_HandleTypeDef * testUart;
+	extern osSemaphoreId_t echoSema;
+	if(huart == testUart)
+	{
+		osSemaphoreRelease(echoSema);
+	}
+#else
 	if(huart == pcNmeaRecv.getUart())
 	{
 		osSemaphoreRelease(pcNmeaRecv.getSema());
@@ -14,7 +22,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		osSemaphoreRelease(gpsNmeaRecv.getSema());
 	}
-
+#endif
 }
 
 extern bool debugUart_isSending;

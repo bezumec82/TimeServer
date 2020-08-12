@@ -27,7 +27,7 @@ public :
 	~NmeaReceiver() = default;
 
 public : /*--- Getters, setters ---*/
-	osSemaphoreId_t getSema()
+	osSemaphoreId_t& getSema()
 	{
 		return rxSema;
 	}
@@ -38,6 +38,7 @@ public : /*--- Getters, setters ---*/
 private :
 	static void threadFunc(void * argument);
 
+
 private : /*--- Properties ---*/
 	UART_HandleTypeDef * uartHandle = nullptr;
 	struct Node * msgList = nullptr;
@@ -46,7 +47,6 @@ private : /*--- Properties ---*/
 	{
 		.name = "RX thread"
 	};
-
 	osSemaphoreId_t rxSema = nullptr;
 	const osSemaphoreAttr_t semaAttr =
 	{

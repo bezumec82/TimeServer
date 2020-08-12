@@ -20,9 +20,11 @@ extern "C" {
 #define MEM_PROT_SYMBOL		0xAA //used in all buffers
 
 #ifndef POSIX
-#define MALLOC 	pvPortMalloc
-#define FREE 	vPortFree
+#define MALLOC 		pvPortMalloc
+#define FREE 		vPortFree
 #endif
+
+#define ECHO_TEST 	true
 
 int _main(void);
 

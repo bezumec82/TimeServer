@@ -1,5 +1,6 @@
 #include "AbstractMain.h"
 #include "NmeaReceiver.h"
+#include "echoTest.h"
 
 /*--- Global variables ---*/
 struct Node * gpsNmea_msgList;
@@ -30,6 +31,9 @@ NmeaReceiver gpsNmeaRecv;
  */
 int _main(void)
 {
+#if(ECHO_TEST)
+	echoTest();
+#else
 	if(pcNmeaRecv.initialize(&huart8) == EXIT_FAILURE)
 	{
 		return EXIT_FAILURE;
@@ -39,6 +43,7 @@ int _main(void)
 	{
 		return EXIT_FAILURE;
 	}
+#endif
 	printf("Custom part successfully initialized.\r\n");
   	return EXIT_SUCCESS;
 }
