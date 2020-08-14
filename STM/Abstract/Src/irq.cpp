@@ -36,4 +36,15 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	}
 }
 
-/* USER CODE END 1 */
+/*!
+ * Stupid CubeMX forget to generate this handler from time to time.
+ * Pre-process out this part in case of compile errors.
+ */
+#if(1)
+void TIM1_UP_IRQHandler(void)
+{
+	extern TIM_HandleTypeDef htim1;
+ 	HAL_TIM_IRQHandler(&htim1);
+}
+#endif
+

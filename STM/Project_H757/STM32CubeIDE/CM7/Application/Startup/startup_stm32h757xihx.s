@@ -55,7 +55,7 @@ defined in linker script */
  * @retval : None
 */
 
-    .section  .text.Reset_Handler
+    .section  .reset_handler, "ax",%progbits
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
@@ -89,13 +89,53 @@ LoopFillZerobss:
   cmp  r2, r3
   bcc  FillZerobss
 
+#if(1) /* Copy text segment from flash to RAM */
+  movs  r1, #0
+  b LoopCopyText
+
+CopyText:
+  ldr  r3, =_tram
+  ldr  r3, [r3, r1]
+  str  r3, [r0, r1]
+  adds  r1, r1, #4
+
+LoopCopyText:
+  ldr  r0, =_stext
+  ldr  r3, =_etext
+  adds  r2, r0, r1
+  cmp  r2, r3
+  bcc  CopyText
+#endif
+
+#if(1) /* Copy vector table from flash to RAM */
+  movs  r1, #0
+  b LoopCopyVTable
+
+CopyVTable:
+  ldr  r3, =_vtram
+  ldr  r3, [r3, r1]
+  str  r3, [r0, r1]
+  adds  r1, r1, #4
+
+LoopCopyVTable:
+  ldr  r0, =_svtable
+  ldr  r3, =_evtable
+  adds  r2, r0, r1
+  cmp  r2, r3
+  bcc  CopyVTable
+#endif
+
 /* Call the clock system intitialization function.*/
-  bl  SystemInit   
+  bl  SystemInit
 /* Call static constructors */
-    bl __libc_init_array
+  bl __libc_init_array
 /* Call the application's entry point.*/
   bl  main
-  bx  lr    
+
+  bx  lr
+  LibCinitArrayConst: .word __libc_init_array
+  SystemInitConst:    .word SystemInit
+  MainConst:          .word main
 .size  Reset_Handler, .-Reset_Handler
 
 /**

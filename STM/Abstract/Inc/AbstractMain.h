@@ -17,6 +17,8 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
+#include "irq.h"
+
 #define MEM_PROT_SYMBOL		0xAA //used in all buffers
 
 #ifndef POSIX

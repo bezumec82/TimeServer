@@ -75,9 +75,11 @@ void DMAEchoThreadFunc(void * argument)
 {
 	for(;;)
 	{
+#if(0)
 		SCB_InvalidateDCache_by_Addr((uint32_t*)(((uint32_t)buf) &
 				~(uint32_t)0x1F),
 				BUF_SIZE+32);
+#endif
 		HAL_UART_Receive_DMA(testUart, &buf[0], sizeof(buf));
 		osStatus_t semaStatus = osSemaphoreAcquire(echoSema,10);
 		if(semaStatus == osOK)

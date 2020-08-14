@@ -32,7 +32,7 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Application/Abstract</name>
+			<name>Application/User/Abstract</name>
 			<type>2</type>
 			<locationURI>PARENT-3-PROJECT_LOC/Abstract</locationURI>
 		</link>

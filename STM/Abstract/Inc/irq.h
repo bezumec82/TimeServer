@@ -15,6 +15,8 @@ extern "C" {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
 
+void TIM1_UP_IRQHandler(void);
+
 #ifdef __cplusplus
 }
 #endif

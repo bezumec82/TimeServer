@@ -44,8 +44,7 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 MEMORY
 {
 RAM_EXEC (rx)      : ORIGIN = 0x24000000, LENGTH = 256K
-RAM (xrw)          : ORIGIN = 0x24040000, LENGTH = 256K
-RAM_D3 (xrw)       : ORIGIN = 0x38000000, LENGTH = 64K
+RAM (xrw)      : ORIGIN = 0x24040000, LENGTH = 256K
 }
 
 /* Define output sections */
@@ -155,6 +154,8 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+
+  
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

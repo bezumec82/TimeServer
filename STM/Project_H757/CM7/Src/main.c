@@ -169,7 +169,6 @@ static void MX_USART6_UART_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-void UART_test(UART_HandleTypeDef * huart);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -291,11 +290,7 @@ Error_Handler();
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-#if(0)
-  UART_test(&huart1);
-  UART_test(&huart6);
-  UART_test(&huart8);
-#endif
+  /* add threads, ... */
   _main();
   /* USER CODE END RTOS_THREADS */
 

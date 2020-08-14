@@ -67,15 +67,6 @@ int _write(int fd, char * ptr, int len)
 	return len;
 }
 
-/*!
- * Stupid CubeMX forget to generate this handler from time to time.
- */
-__weak void TIM1_UP_IRQHandler(void)
-{
-	extern TIM_HandleTypeDef htim1;
- 	HAL_TIM_IRQHandler(&htim1);
-}
-
 #ifdef __cplusplus
 }
 #endif
