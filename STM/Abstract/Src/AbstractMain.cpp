@@ -24,6 +24,11 @@ UART_HandleTypeDef * debugUart	= &huart1;
 NmeaReceiver pcNmeaRecv;
 NmeaReceiver gpsNmeaRecv;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /*!
  * This function should be run after 'osKernelInitialize'.
  * Best place is right before call to the 'osKernelStart'.
@@ -48,9 +53,6 @@ int _main(void)
   	return EXIT_SUCCESS;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 void vApplicationMallocFailedHook( void )

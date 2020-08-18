@@ -55,8 +55,7 @@ defined in linker script */
  * @retval : None
 */
 
-.section  .text.Reset_Handler
-//.section .reset_handler.Reset_Handler
+    .section  .text.Reset_Handler
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:  
@@ -90,47 +89,13 @@ LoopFillZerobss:
   cmp  r2, r3
   bcc  FillZerobss
 
-#if(0)
-  movs  r1, #0
-  b LoopCopyText
-
-CopyText:
-  ldr  r3, =_tram
-  ldr  r3, [r3, r1]
-  str  r3, [r0, r1]
-  adds  r1, r1, #4
-
-LoopCopyText:
-  ldr  r0, =_stext
-  ldr  r3, =_etext
-  adds  r2, r0, r1
-  cmp  r2, r3
-  bcc  CopyText
-#endif
-
-#if(1)
 /* Call the clock system intitialization function.*/
-  bl  SystemInit
+  bl  SystemInit   
 /* Call static constructors */
-  bl __libc_init_array
+    bl __libc_init_array
 /* Call the application's entry point.*/
   bl  main
-#else
-    ldr r0, SystemInitConst
-    bx r0
-
-    ldr r0, LibCinitArrayConst
-    bx r0
-
-    ldr r0, MainConst
-    bx r0
-#endif
-    bx  lr
-
-  LibCinitArrayConst: .word __libc_init_array
-  SystemInitConst:    .word SystemInit
-  MainConst:          .word main
-
+  bx  lr    
 .size  Reset_Handler, .-Reset_Handler
 
 /**
