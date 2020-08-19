@@ -78,8 +78,13 @@ int test()
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
 	engine.Create(context2);
-	engine.Start();
 
+	::GreenThreads::Context floatContext;
+	floatContext.threadFunc = threadFuncFloat;
+	floatContext.name = "Float context";
+	engine.Create(floatContext);
+
+	engine.Start();
 	/* execution returns here after full circle */
 	return EXIT_SUCCESS;
 }
@@ -87,29 +92,28 @@ int test()
 #else
 int test()
 {
-#if(0)
+
 	::GreenThreads::Context context1;
 	context1.stack = &stack1[0];
 	context1.stackSize = sizeof(stack1)/sizeof(uint32_t);
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
 	engine.Create(context1);
-#endif
-#if(0)
+
 	::GreenThreads::Context context2;
 	context2.stack = &stack2[0];
 	context2.stackSize = sizeof(stack2)/sizeof(uint32_t);
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
 	engine.Create(context2);
-#else
+
 	::GreenThreads::Context floatContext;
 	floatContext.stack = &stack3[0];
 	floatContext.stackSize = sizeof(stack3)/sizeof(uint32_t);
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
 	engine.Create(floatContext);
-#endif
+
 	for(;;)
 		engine.Yield();
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#define PROTECTED_STACK			false
+#define PROTECTED_STACK			true
 
 #if (PROTECTED_STACK)
 # define THREAD_STACK_SIZE			256

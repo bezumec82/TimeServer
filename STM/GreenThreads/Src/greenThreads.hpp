@@ -9,6 +9,7 @@
 #endif
 
 #include <stdint.h>
+#include <assert.h>
 #include "cmsis_gcc.h"
 
 #include "greenThreadsConfig.h"
@@ -36,7 +37,9 @@
 extern "C"
 {
 void asmYield(void *, void *);
-void astStart(void *);
+#if (PROTECTED_STACK)
+void asmStart(void *);
+#endif
 }
 
 
@@ -67,7 +70,7 @@ namespace GreenThreads
 	public :
 		const char * name;
 		ThreadFunc threadFunc;
-
+		uint32_t threadNumber; /*!< Used to find its place in stack pool */
 	};
 
 	class Engine
@@ -76,14 +79,13 @@ namespace GreenThreads
 		Engine();
 
 	public : /*--- Methods ---*/
-		void Create( Context& context );
+		void Create( Context& );
 		void Yield();
 		void Start();
 	private :
-		static void Supervisor();
-		void PrepareStack( Context& context );
-
-
+		static void Supervisor( Engine * );
+		void PrepareStack( Context& );
+		void CheckStack();
 	private : /*--- Variables ---*/
 		Context head = {};
 		Context * current = nullptr;
