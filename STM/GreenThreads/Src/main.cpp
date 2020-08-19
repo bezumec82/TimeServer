@@ -122,6 +122,11 @@ int test()
 }
 #endif
 
+void SVC_Handler_C(uint32_t svc_num)
+{
+	printf("SVC exception number : %ul", svc_num);
+}
+
 
 #ifdef __cplusplus
 }

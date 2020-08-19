@@ -29,7 +29,8 @@
  * So actually we can't work in un-privileged mode
  * without exception mechanism like in this implementation.
  */
-#define THREAD_CONTROL	0x2	//Privileged + process stack
+#define THREAD_CONTROL	0x3	//UN-privileged + process stack
+
 
 
 #define PROTECTION_WORD	0xdeadbeaf

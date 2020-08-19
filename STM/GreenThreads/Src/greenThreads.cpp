@@ -120,6 +120,9 @@ void Engine::Start()
 
 void Engine::Yield()
 {
+	// Incompatible with freeRTOS
+	// In freeRTOS SVC handler already defined as 'vPortSVCHandler'
+	//__asm__ volatile("svc #10" : : :); //call to change priority
 	asmYield((void *)&current, (void*)current->next);
 }
 

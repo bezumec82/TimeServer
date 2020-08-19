@@ -8,6 +8,13 @@ extern "C" {
 
 int test();
 
+/*!
+ * Incompatible with freeRTOS
+ * in freeRTOS this handler is defined as 'vPortSVCHandler'
+ */
+void SVC_Handler(void);
+void SVC_Handler_C(void);
+
 #ifdef __cplusplus
 }
 #endif
