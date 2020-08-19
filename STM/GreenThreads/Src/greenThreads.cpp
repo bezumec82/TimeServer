@@ -1,22 +1,27 @@
 #include "greenThreads.hpp"
 
+#if PROTECTED_STACK
+uint32_t stackPool[PROTECTION_ZONE_WORDS + \
+	(THREAD_STACK_SIZE  + PROTECTION_ZONE_WORDS) * THREAD_AMNT];
+#endif
+
+
 using namespace GreenThreads;
 
 Engine::Engine()
 {
 	/* Initialize head */
-	head.stack = &idleStack[0];
-	head.stackSize = sizeof(idleStack)/sizeof(uint32_t);
-	head.threadFunc = idleTask;
+
 	head.name = "Head node/Idle thread";
 
-	/* Prepare initial context */
-	head.stack = &head.stack[0] + head.stackSize;
-	/* Full descendant stack */
-	head.stack--;
-	*(head.stack) =
-			reinterpret_cast<uint32_t>(head.threadFunc); //set PC
-	head.stack -= REGS_AMNT;
+	/* Head context will be executed directly from 'main'
+	 * calling Yield will start it from main */
+#if(PROTECTED_STACK)
+	head.stack = &headStack[0];
+	head.stackSize = sizeof(headStack)/sizeof(uint32_t);
+	head.threadFunc = Supervisor;
+	PrepareStack(head);
+#endif
 
 	/* Connect to itself */
 	head.next = &head;
@@ -34,21 +39,25 @@ Engine::Engine()
  */
 void Engine::Create( Context& context )
 {
+#if(PROTECTED_STACK)
+	if(threadCount > THREAD_AMNT)
+	{
+		PRINTF("Thread amount is bigger than declared.\r\n");
+		return;
+	}
+
+#else
 	if(context.stackSize == 0) //TODO: less than min necessary amount
 	{
 		PRINTF("Stuck size is too low.\r\n")
+		return;
 	}
+#endif
 	ALIGN(context.stackSize);
-	/* Descending full stack */
-	context.stack = &context.stack[0] + context.stackSize;
+	/* User must provide thread function, name and stack in some config */
+	PrepareStack(context);
 
-	/* Prepare initial context */
-	context.stack--;
-	*(context.stack) =
-			reinterpret_cast<uint32_t>(context.threadFunc); //set PC
-	context.stack -= REGS_AMNT;
-
-	/* Can't be optimized, but will be less obvious */
+	/* Can be optimized, but will be less obvious */
 	Context * last = head.prev;
 	last->next = &context;
 	context.next = &head;
@@ -58,40 +67,62 @@ void Engine::Create( Context& context )
 	threadCount++;
 }
 
-void Engine::Yeild()
+void Engine::PrepareStack( Context& context )
 {
-#if(1)
-	__asm__ (
-		/* Get address of the next instruction after this function */
-    	"push {lr}				\n"
-//		"ldr r0, [%[context], #0]		\n" //get stack pointer in context structure
-//		"str sp, [r0, #0]				\n" //save new stack pointer value
-//		/* current = current->next */
-//		"ldr r0, [r0, #4]				\n" //get next context
-//		"str r0, [%[context], #0]		\n" //set current to the next context
-//
-//		"ldr sp, [%[context], #0]		\n" //set stack pointer for the next thread
-		"pop {pc}				\n"
-		/* bx lr - should be here*/
-		: /* OutputOperands */
-		: [context]"r"(&current) /* InputOperands */
-		:"r0","r1","r2","r3","r4","r5","r6",
-		"r8","r9","r10","r11","r12","cc","memory"
-		);
-#else
-	asmYeild((void *)&current, (void*)current->next);
+#if (PROTECTED_STACK)
+	if (&context != &head) //head has separate stack
+	{
+		context.stack = stackPool + PROTECTION_ZONE_WORDS + \
+		(THREAD_STACK_SIZE  + PROTECTION_ZONE_WORDS) * threadCount;
+	}
+	context.stack[0] = PROTECTION_WORD;
+#endif
+	/* Descending full stack */
+	context.stack = &context.stack[0] + context.stackSize;
+	/* Prepare initial context */
+	context.stack--;
+	/* PC at the very bottom of the stack */
+	*(context.stack) =
+			reinterpret_cast<uint32_t>(context.threadFunc);
+	/* Let's pretend that r0-r12 are stacked at the beginning */
+	context.stack -= REGS_AMNT;
+	context.stack--;
+	if (&context != &head)
+	{
+		*(context.stack) = THREAD_CONTROL;
+	}
+#if (PROTECTED_STACK)
+	else
+	{
+		*(context.stack) = HEAD_CONTROL;
+	}
 #endif
 }
 
-void Engine::idleTask()
+#if(PROTECTED_STACK)
+void Engine::Start()
 {
-#if(!TEST) /* */
+	asmStart((void *)&head);
+}
+#endif
+
+void Engine::Yield()
+{
+	asmYield((void *)&current, (void*)current->next);
+}
+
+#if(PROTECTED_STACK)
+void Engine::Supervisor()
+{
+	/* Check stack protection here*/
+
+
+#if(EVENT_DRIVEN) //sleep until new events
 	__DSB();
 	__ISB();
 	__WFI();
-#else
-	HAL_Delay(100);
 #endif
-
+	Yield();
 }
+#endif
 

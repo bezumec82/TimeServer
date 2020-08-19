@@ -11,12 +11,34 @@
 #include <stdint.h>
 #include "cmsis_gcc.h"
 
+#include "greenThreadsConfig.h"
+
 #define TEST			true
 #define PRINTF(text, ...)
 #define ALIGN(size) 	size &= ( ~( sizeof(void*) - 1 ) );
 #define REGS_AMNT		13 /* r0-r12 */
 
-extern "C" void asmYeild(void *, void *);
+/* After reset, the CONTROL register is 0.
+ * This means the Thread mode uses the Main Stack Pointer as Stack Pointer
+ * and Thread mode has privileged accesses */
+#define HEAD_CONTROL	0x0 //Privileged + main stack
+/*
+ * A program in unprivileged access level cannot switch itself
+ * back to privileged access level.
+ * So actually we can't work in un-privileged mode
+ * without exception mechanism like in this implementation.
+ */
+#define THREAD_CONTROL	0x2	//Privileged + process stack
+
+
+#define PROTECTION_WORD	0xdeadbeaf
+
+extern "C"
+{
+void asmYield(void *, void *);
+void astStart(void *);
+}
+
 
 namespace GreenThreads
 {
@@ -26,13 +48,23 @@ namespace GreenThreads
 	struct Context
 	{
 	friend class Engine;
+	/* In case of protected stack,
+	 * stack itself and its size defined inside this mechanism. */
+#if (PROTECTED_STACK)
+	private :
+#endif
 		uint32_t * stack; /*!< Pointer to the allocated stack */
 	private :
+		/* All context are connected in double-linked lists,
+		 * can be optimized to single-linked */
 		struct Context * next; //next is the !second! member of structure
 		struct Context * prev;
 
+#if (!PROTECTED_STACK)
 	public :
+#endif
 		size_t stackSize; /*!< Stack size in words */
+	public :
 		const char * name;
 		ThreadFunc threadFunc;
 
@@ -45,15 +77,19 @@ namespace GreenThreads
 
 	public : /*--- Methods ---*/
 		void Create( Context& context );
-		void Yeild();
-
+		void Yield();
+		void Start();
 	private :
-		static void idleTask();
+		static void Supervisor();
+		void PrepareStack( Context& context );
+
 
 	private : /*--- Variables ---*/
 		Context head = {};
 		Context * current = nullptr;
-		uint32_t idleStack[64];
+#if(PROTECTED_STACK)
+		uint32_t headStack[128];
+#endif
 		uint32_t threadCount = 0;
 		const uint32_t DEFAULT_STACK_SIZE = 256;
 
