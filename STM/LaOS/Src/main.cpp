@@ -6,8 +6,6 @@
 
 #include "core.hpp"
 
-::LaOS::Core Core;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,15 +28,14 @@ void threadFunc1(void)
 		memcpy(testBuf, arr, sizeof(arr));
 
 		printf("%s", &D);
-		Core.Yield();
+		Yield();
 
 		printf("%s", S);
-		Core.Yield();
+		Yield();
 
 		printf("%s", &O);
 	}
 }
-
 
 void threadFunc2(void)
 {
@@ -48,10 +45,10 @@ void threadFunc2(void)
 		const char * C = "C"; //scoped variable
 
 		printf("%s", &I);
-		Core.Yield();
+		Yield();
 
 		printf("%s", C);
-		Core.Yield();
+		Yield();
 
 		printf("\r\n");
 	}
@@ -65,10 +62,10 @@ void threadFuncFloat(void)
 	{
 		float local = 0.0;
 		ret = pi * M_E;
-		Core.Yield();
+		Yield();
 
 		ret *= M_2_SQRTPI;
-		Core.Yield();
+		Yield();
 
 		local /= ret;
 		ret += local;
@@ -79,7 +76,7 @@ void stackOverflow(void)
 {
 	float a[16] = { M_PI };
 	a[2] *= M_PI;
-	Core.Yield();
+	Yield();
 	a[1] = a[2];
 	stackOverflow();
 }
@@ -87,10 +84,11 @@ void stackOverflow(void)
 #if PROTECTED_STACK
 int test()
 {
+	::LaOS::Core& core = ::LaOS::Core::getInstance();
 	::LaOS::Context context1;
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
-	Core.Create(context1);
+	core.Create(context1);
 #if(0)
 	::LaOS::Context context2;
 	context2.threadFunc = threadFunc2;
@@ -100,14 +98,14 @@ int test()
 	::LaOS::Context floatContext;
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
-	Core.Create(floatContext);
+	core.Create(floatContext);
 
 	::LaOS::Context stackOverflowContext;
 	stackOverflowContext.threadFunc = stackOverflow;
 	stackOverflowContext.name = "Stack overflow context";
-	Core.Create(stackOverflowContext);
+	core.Create(stackOverflowContext);
 
-	Core.Start();
+	core.Start();
 	/* execution returns here after full circle */
 	return EXIT_SUCCESS;
 }

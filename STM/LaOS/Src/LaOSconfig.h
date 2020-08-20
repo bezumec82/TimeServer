@@ -3,15 +3,16 @@
 #define PROTECTED_STACK			true
 
 #if (PROTECTED_STACK)
-# define THREAD_STACK_SIZE			256
-# define THREAD_AMNT				3
-# define PROTECTION_ZONE_WORDS		64
+# define STATIC_STACK_PROTECTION			true
+# define THREAD_STACK_SIZE_WORDS			256
+# define THREAD_AMNT						3
+# define PROTECTION_ZONE_WORDS				64
 # if (PROTECTION_ZONE_WORDS < 32)
 #  error "Protection zone too low"
 # endif
 
 //Check 16 bytes alignment for stack
-# if( THREAD_STACK_SIZE % 16 )
+# if( THREAD_STACK_SIZE_WORDS % 16 )
 #  error "Stack alignment error"
 # endif
 

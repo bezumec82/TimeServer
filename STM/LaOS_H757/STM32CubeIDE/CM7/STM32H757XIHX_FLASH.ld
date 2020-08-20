@@ -43,26 +43,39 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
+FLASH (rx)     : ORIGIN = 0x08000000, LENGTH = 1024K
+DTCM (xrw)     : ORIGIN = 0x20000000, LENGTH = 128K
+ITCM (xrw)     : ORIGIN = 0x00000000, LENGTH = 64K
+AXI_SRAM1(xrw) : ORIGIN = 0x24000000, LENGTH = 256K
+AXI_SRAM2(xrw) : ORIGIN = 0x24040000, LENGTH = 512K
+SRAM4 (xrw)    : ORIGIN = 0x38000000, LENGTH = 64K
 }
 
 /* Define output sections */
 SECTIONS
 {
-  /* The startup code goes first into FLASH */
+  _vtram = LOADADDR(.isr_vector);
   .isr_vector :
   {
     . = ALIGN(4);
+    _svtable = .;
     KEEP(*(.isr_vector)) /* Startup code */
+    _evtable = .;
+    . = ALIGN(4);
+  } >AXI_SRAM1 AT> FLASH
+
+  .reset_handler :
+  {
+    . = ALIGN(4);
+    KEEP(*(.reset_handler))
     . = ALIGN(4);
   } >FLASH
-
-  /* The program code and other data goes into FLASH */
+  
+  _tram = LOADADDR(.text);
   .text :
   {
     . = ALIGN(4);
+    _stext = .;
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
@@ -74,7 +87,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+  } >AXI_SRAM1 AT> FLASH
 
   /* Constant data goes into FLASH */
   .rodata :
@@ -126,7 +139,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+  } >DTCM AT> FLASH
 
   
   /* Uninitialized data section */
@@ -143,7 +156,7 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
-  } >RAM
+  } >DTCM
 
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
@@ -154,10 +167,20 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >RAM
+  } >DTCM
 
-  
+    .dma_buffer :
+    {
+        . = ALIGN(4);
+        *(.dma_buffer)
+    } >SRAM4
 
+    .unprivileged_stack :
+    {
+        . = ALIGN(1024);
+        *(.unprivileged_stack)
+    } > AXI_SRAM2
+    
   /* Remove information from the standard libraries */
   /DISCARD/ :
   {

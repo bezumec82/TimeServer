@@ -1,6 +1,6 @@
-This folder contains internal implementation of mechainsm.
-File 'main.cpp' provides example how to add solution to your 'C' code.
-You should create separate *.cpp file. 
+This folder contains an internal implementation of the mechainsm.
+File 'main.cpp' provides example of how to add a solution to your 'C' code.
+You should create a separate *.cpp file. 
 Inside this file define all global symbols - thread functions,
 context structures. 
 Your solution should be wrapped in 'C' function inside
