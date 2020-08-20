@@ -25,7 +25,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdlib.h"
-#include "greenThreads.h"
+#include "LaOS.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -32,9 +32,9 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>Application/GreenThreads</name>
+			<name>Application/LaOS</name>
 			<type>2</type>
-			<locationURI>PARENT-3-PROJECT_LOC/GreenThreads</locationURI>
+			<locationURI>PARENT-3-PROJECT_LOC/LaOS</locationURI>
 		</link>
 		<link>
 			<name>Application/User/main.c</name>

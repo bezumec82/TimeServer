@@ -10,14 +10,16 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <stdio.h>
+
 #include "cmsis_gcc.h"
 
-#include "greenThreadsConfig.h"
+#include "LaOSconfig.h"
 
 #define TEST			true
 #define PRINTF(text, ...)
 #define ALIGN(size) 	size &= ( ~( sizeof(void*) - 1 ) );
-#define REGS_AMNT		13 /* r0-r12 */
+#define REGS_AMNT		8 /* r4-r11 */
 
 /* After reset, the CONTROL register is 0.
  * This means the Thread mode uses the Main Stack Pointer as Stack Pointer
@@ -44,14 +46,14 @@ void asmStart(void *);
 }
 
 
-namespace GreenThreads
+namespace LaOS
 {
 
 	using ThreadFunc = void(*)();
 
 	struct Context
 	{
-	friend class Engine;
+	friend class Core;
 	/* In case of protected stack,
 	 * stack itself and its size defined inside this mechanism. */
 #if (PROTECTED_STACK)
@@ -74,19 +76,20 @@ namespace GreenThreads
 		uint32_t threadNumber; /*!< Used to find its place in stack pool */
 	};
 
-	class Engine
+	class Core
 	{
 	public : /*--- Constructors/Destructors ---*/
-		Engine();
+		Core();
 
 	public : /*--- Methods ---*/
 		void Create( Context& );
 		void Yield();
 		void Start();
 	private :
-		static void Supervisor( Engine * );
+		static void Supervisor( Core * );
 		void PrepareStack( Context& );
 		void CheckStack();
+		void Kill( Context& );
 	private : /*--- Variables ---*/
 		Context head = {};
 		Context * current = nullptr;

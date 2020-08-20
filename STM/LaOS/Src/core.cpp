@@ -1,27 +1,27 @@
-#include "greenThreads.hpp"
-#include <functional>
+#include "core.hpp"
 
 #if PROTECTED_STACK
 //TODO : remove to separate memory location
 uint32_t stackPool[PROTECTION_ZONE_WORDS + \
-	(THREAD_STACK_SIZE  + PROTECTION_ZONE_WORDS) * THREAD_AMNT];
+	(THREAD_STACK_SIZE  + PROTECTION_ZONE_WORDS) * THREAD_AMNT]  \
+	__attribute__((aligned (16)));
 #endif
 
 
-using namespace GreenThreads;
+using namespace LaOS;
 
-Engine::Engine()
+Core::Core()
 {
 	/* Initialize head */
 	head.name = "Head node/Idle thread";
-	head.threadNumber = threadCount;
+	head.threadNumber = 0xbadf00d;
 	/* Head context will be executed directly from 'main'
 	 * calling Yield will start it from main */
 #if(PROTECTED_STACK)
 	/* Prepare initial stack context */
 	/* Descending full stack */
 	/* Initial stack content must be :
-	 * pc -> r13..r0 -> control */
+	 * pc -> r12..r0 -> control */
 	head.stack = &headStack[0];
 	head.stackSize = sizeof(headStack)/sizeof(uint32_t);
 	//Place protection at bottom of stack - just in case
@@ -54,7 +54,7 @@ Engine::Engine()
  * Current implementation not relies on 'malloc'
  * so it may not to be present in the system.
  */
-void Engine::Create( Context& context )
+void Core::Create( Context& context )
 {
 #if(PROTECTED_STACK)
 
@@ -71,6 +71,9 @@ void Engine::Create( Context& context )
 	}
 	ALIGN(context.stackSize);
 #endif
+
+	/* Should be done here - 'PrepareStack' is used for restart */
+	context.threadNumber = threadCount;
 	/* User must provide thread function, name and stack in some config */
 	PrepareStack(context);
 
@@ -83,9 +86,8 @@ void Engine::Create( Context& context )
 	threadCount++;
 }
 
-void Engine::PrepareStack( Context& context )
+void Core::PrepareStack( Context& context )
 {
-	context.threadNumber = threadCount;
 #if (PROTECTED_STACK)
 	/* The same formula will be used to allocate stack after thread fault */
 	context.stack = &stackPool[0] + PROTECTION_ZONE_WORDS + \
@@ -112,13 +114,13 @@ void Engine::PrepareStack( Context& context )
 }
 
 #if(PROTECTED_STACK)
-void Engine::Start()
+void Core::Start()
 {
 	asmStart((void *)&head);
 }
 #endif
 
-void Engine::Yield()
+void Core::Yield()
 {
 	// Incompatible with freeRTOS
 	// In freeRTOS SVC handler already defined as 'vPortSVCHandler'
@@ -127,7 +129,7 @@ void Engine::Yield()
 }
 
 #if(PROTECTED_STACK)
-void Engine::Supervisor(Engine * instance)
+void Core::Supervisor(Core * instance)
 {
 	for(;;)
 	{
@@ -144,24 +146,48 @@ void Engine::Supervisor(Engine * instance)
 }
 #endif
 
-void Engine::CheckStack()
+void Core::CheckStack()
 {
-	Context * context = head.next; //do not check head
-	for( ;context->next != &head; context = context->next)
+	Context * context = head.prev; //do not check head
+	//Check in reverse order - find overflow before corrosion
+	for( ;context != &head; context = context->prev)
 	{
 		//Check bottom
-		assert( ( stackPool [ PROTECTION_ZONE_WORDS + \
+		if ( stackPool [ PROTECTION_ZONE_WORDS + \
 			(THREAD_STACK_SIZE  + PROTECTION_ZONE_WORDS) * \
-				context->threadNumber ] == PROTECTION_WORD ) \
-					&& "Stack overflow");
+				context->threadNumber ] != PROTECTION_WORD )
+		{
+			printf("Stack overflow in : %s\r\n", context->name);
+			/* This disables all changes in stack
+			 * and restore protection symbols */
+			PrepareStack(*context);
+		}
 		//Check top
-		assert( ( stackPool [ PROTECTION_ZONE_WORDS + \
+		if( stackPool [ PROTECTION_ZONE_WORDS + \
 			(THREAD_STACK_SIZE  + PROTECTION_ZONE_WORDS) * \
-				context->threadNumber + context->stackSize] == PROTECTION_WORD ) \
-					&& "Stack corrosion");
+				context->threadNumber + context->stackSize] != PROTECTION_WORD )
+		{
+			printf("Stack corrosion in : %s\r\n", context->name);
+			PrepareStack(*context); //whose stack was corroded
+			if(context->next != &head)
+				PrepareStack(*context->next); //who corroded stack
+		}
 	}
 	//Check executor's stack
 	assert( (headStack[0] == PROTECTION_WORD) \
 			&& "Executor's stack overflow" );
+}
+/*!
+ * Cause everything is allocated statically,
+ * just remove from linked list;
+ * @param context
+ */
+void Core::Kill( Context& context )
+{
+	/* Remove from linked list */
+	Context * next = context.next;
+	Context * prev = context.prev;
+	next->prev = prev;
+	prev->next = next;
 }
 

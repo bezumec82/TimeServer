@@ -1,8 +1,12 @@
-#include "greenThreads.hpp"
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-::GreenThreads::Engine engine;
+#include <algorithm>
+
+#include "core.hpp"
+
+::LaOS::Core Core;
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,6 +15,7 @@ extern "C" {
 uint32_t stack1[128];
 uint32_t stack2[128];
 uint32_t stack3[256];
+uint32_t testBuf[256];
 
 char O = '0'; //global variable
 void threadFunc1(void)
@@ -20,11 +25,15 @@ void threadFunc1(void)
 	{
 		const char * S = "S"; //scoped variable
 
+		uint32_t arr[16];
+		::std::fill_n(arr, 16, 0xdeadc0de);
+		memcpy(testBuf, arr, sizeof(arr));
+
 		printf("%s", &D);
-		engine.Yield();
+		Core.Yield();
 
 		printf("%s", S);
-		engine.Yield();
+		Core.Yield();
 
 		printf("%s", &O);
 	}
@@ -39,10 +48,10 @@ void threadFunc2(void)
 		const char * C = "C"; //scoped variable
 
 		printf("%s", &I);
-		engine.Yield();
+		Core.Yield();
 
 		printf("%s", C);
-		engine.Yield();
+		Core.Yield();
 
 		printf("\r\n");
 	}
@@ -56,35 +65,49 @@ void threadFuncFloat(void)
 	{
 		float local = 0.0;
 		ret = pi * M_E;
-		engine.Yield();
+		Core.Yield();
 
 		ret *= M_2_SQRTPI;
-		engine.Yield();
+		Core.Yield();
 
 		local /= ret;
 		ret += local;
 	}
 }
 
+void stackOverflow(void)
+{
+	float a[16] = { M_PI };
+	a[2] *= M_PI;
+	Core.Yield();
+	a[1] = a[2];
+	stackOverflow();
+}
+
 #if PROTECTED_STACK
 int test()
 {
-	::GreenThreads::Context context1;
+	::LaOS::Context context1;
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
-	engine.Create(context1);
-
-	::GreenThreads::Context context2;
+	Core.Create(context1);
+#if(0)
+	::LaOS::Context context2;
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
-	engine.Create(context2);
-
-	::GreenThreads::Context floatContext;
+	Core.Create(context2);
+#endif
+	::LaOS::Context floatContext;
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
-	engine.Create(floatContext);
+	Core.Create(floatContext);
 
-	engine.Start();
+	::LaOS::Context stackOverflowContext;
+	stackOverflowContext.threadFunc = stackOverflow;
+	stackOverflowContext.name = "Stack overflow context";
+	Core.Create(stackOverflowContext);
+
+	Core.Start();
 	/* execution returns here after full circle */
 	return EXIT_SUCCESS;
 }
@@ -93,39 +116,36 @@ int test()
 int test()
 {
 
-	::GreenThreads::Context context1;
+	::LaOS::Context context1;
 	context1.stack = &stack1[0];
 	context1.stackSize = sizeof(stack1)/sizeof(uint32_t);
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
-	engine.Create(context1);
+	Core.Create(context1);
 
-	::GreenThreads::Context context2;
+	::LaOS::Context context2;
 	context2.stack = &stack2[0];
 	context2.stackSize = sizeof(stack2)/sizeof(uint32_t);
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
-	engine.Create(context2);
+	Core.Create(context2);
 
-	::GreenThreads::Context floatContext;
+	::LaOS::Context floatContext;
 	floatContext.stack = &stack3[0];
 	floatContext.stackSize = sizeof(stack3)/sizeof(uint32_t);
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
-	engine.Create(floatContext);
+	Core.Create(floatContext);
 
 	for(;;)
-		engine.Yield();
+		Core.Yield();
 
 	/* execution returns here after full circle */
 	return EXIT_SUCCESS;
 }
 #endif
 
-void SVC_Handler_C(uint32_t svc_num)
-{
-	printf("SVC exception number : %ul", svc_num);
-}
+
 
 
 #ifdef __cplusplus
