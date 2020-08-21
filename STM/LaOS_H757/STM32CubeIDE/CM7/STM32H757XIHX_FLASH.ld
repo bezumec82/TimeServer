@@ -1,35 +1,9 @@
-/*
-******************************************************************************
-**
-**  File        : LinkerScript.ld
-**
-**
-**  Abstract    : Linker script for STM32H7 series
-**                1024Kbytes FLASH and 192Kbytes RAM
-**
-**                Set heap size, stack size and stack location according
-**                to application requirements.
-**
-**                Set memory bank area and size if external memory is used.
-**
-**  Target      : STMicroelectronics STM32
-**
-**  Distribution: The file is distributed as is, without any warranty
-**                of any kind.
-**
-*****************************************************************************
-** @attention
-**
-** Copyright (c) 2019 STMicroelectronics.
-** All rights reserved.
-**
-** This software component is licensed by ST under BSD 3-Clause license,
-** the "License"; You may not use this file except in compliance with the
-** License. You may obtain a copy of the License at:
-**                        opensource.org/licenses/BSD-3-Clause
-**
-****************************************************************************
-*/
+/* Linker script for LaOS
+ * main differences : 
+ * - load code from flash to RAM
+ * - DMA has separate region
+ * - Unprivileged stack region for threads
+ */
 
 /* Entry Point */
 ENTRY(Reset_Handler)
@@ -178,7 +152,9 @@ SECTIONS
     .unprivileged_stack :
     {
         . = ALIGN(1024);
+        _sustack = .;
         *(.unprivileged_stack)
+        _eustack = .;
     } > AXI_SRAM2
     
   /* Remove information from the standard libraries */

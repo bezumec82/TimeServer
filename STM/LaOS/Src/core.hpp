@@ -1,5 +1,10 @@
 #pragma once
 
+/* This is the key to all headers :
+ * cmsis_gcc.h
+ * cmsis_cm7.h
+ * mpu_armv7.h
+ */
 #ifdef STM32H757xx
 # include "stm32h7xx_hal.h"
 #endif
@@ -12,12 +17,11 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "cmsis_gcc.h"
-
 #include "LaOSconfig.h"
+#include "LaOSmain.h"
 
 #define TEST				true
-#define PRINTF(text, ...)
+#define PRINTF(text, ...)	printf(text, ##__VA_ARGS__)
 #define ALIGN(size) 		size &= ( ~( sizeof(void*) - 1 ) );
 #define REGS_AMNT			8 /* r4-r11 */
 
@@ -25,19 +29,18 @@
  * This means the Thread mode uses the Main Stack Pointer as Stack Pointer
  * and Thread mode has privileged accesses */
 #define HEAD_CONTROL		0x0 //Privileged + main stack
-
-/* Un-privileged access will be set in yeild */
-#define THREAD_CONTROL		0x2	//privileged + process stack
-
+/* Un-privileged access will be set in yield */
+#define THREAD_CONTROL		0x3	//un-privileged + process stack
 #define MPU_REGIONS_CNT		8
+#define PROTECTION_WORD		0xdeadbeaf
 
-#define PROTECTION_WORD	0xdeadbeaf
 
 extern "C"
 {
 void asmYield(void *, void *);
 #if (PROTECTED_STACK)
 void asmStart(void *);
+void sysCall(int, ...);
 #endif
 }
 

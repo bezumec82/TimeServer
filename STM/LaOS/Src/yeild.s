@@ -12,18 +12,23 @@ asmYield:
          * pc -> r12..r0 -> ?s31..s16? -> control */
         stmdb sp!, {r4-r11,lr}      //save context where we arrived from
         mrs r2, control             //read current control
-#if(1)
+
         tst r2, #0x4                //test bit 3 - Floating Point Context Active
         it ne                       //if 1 (Z clear)
         vstmdbne sp!, {s16-s31}     //save FPU registers
-#endif
+
         stmdb sp!, {r2}             //save control - last to stack
+
+        /* Check current control - switch to privileged */
+        tst r2, #1  //test bit 1
+        it ne       //if 1 (Z clear) == un-priveleged
+        svcne #0    //change to priveleged
 
         ldr r3, [r0]    //dereference &context to context
                         //the first member of context structure - stack pointer
         str sp, [r3]    //re-write stack pointer
 
-        /* current = current->next */
+        /*--- current = current->next ---*/
         str r1, [r0]    //set next context as current
         ldr r0, [r0]    //dereference &context to context
                         //now context is the next context
@@ -33,23 +38,17 @@ asmYield:
         ldr r3, [r3]    //dereference stack pointer to value
                         //last value on stack was control
 
-        /* Check current control - that we actually can write control */
-        //r2 contains control from previous read
-        tst r2, #1  //test bit 1
-        it ne       //if 1 (Z clear) == un-priveleged
-        svcne #0    //change to priveleged
-
                             //r3 contains control taken from stack
         msr control, r3     //restore control taken from stack
         isb
 
         ldr sp, [r0]                //get new stack pointer
         ldmia sp!, {r2}             //dummy read
-#if(1)
+
         tst r3, #0x4                //test bit 3 - Floating Point Context Active
         it ne                       //if 1
         vldmiane sp!, {s16-s31}     //restore FPU registers
-#endif
+
         ldmia sp!, {r4-r11, pc}     //continue execution of new context
 
 .global asmStart

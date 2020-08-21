@@ -87,6 +87,7 @@ SAI_HandleTypeDef hsai_BlockA1;
 
 SD_HandleTypeDef hsd1;
 
+REMOVE_PROTECTION
 UART_HandleTypeDef huart1;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;

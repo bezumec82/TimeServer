@@ -5,55 +5,72 @@
 #include <algorithm>
 
 #include "core.hpp"
+#include "debug.hpp"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-uint32_t stack1[128];
-uint32_t stack2[128];
-uint32_t stack3[256];
-uint32_t testBuf[256];
-
-char O = '0'; //global variable
+/*! No stack */
 void threadFunc1(void)
 {
-	char D = 'D'; //local variable
 	for(;;)
 	{
-		const char * S = "S"; //scoped variable
-
-		uint32_t arr[16];
-		::std::fill_n(arr, 16, 0xdeadc0de);
-		memcpy(testBuf, arr, sizeof(arr));
-
+/* 'stdio' internally uses variable 'errno' in global stack.
+ * User should choose between protection and laziness. */
+#if(!PROTECTED_STACK)
 		printf("%s", &D);
+#endif
+		debug("D.");
 		Yield();
 
-		printf("%s", S);
+		debug("S.");
 		Yield();
 
-		printf("%s", &O);
+		debug("0.");
+		Yield();
 	}
 }
 
+char memFault[128] = {};	//global variable not accessible
+					//unless :
+REMOVE_PROTECTION
+char memAccessible[128] = {};
+
+REMOVE_PROTECTION int loopCounter = 0;
+/*! Local and global variables */
 void threadFunc2(void)
 {
-	char I = 'I'; //local variable
+	char * I = "I."; //local variable
 	for(;;)
 	{
-		const char * C = "C"; //scoped variable
-
-		printf("%s", &I);
+		const char * C = "C."; //scoped variable
+		debug(I);
 		Yield();
 
-		printf("%s", C);
+		debug(C);
 		Yield();
 
-		printf("\r\n");
-	}
+		debug("\r\n");
+
+		char arr[] = "Copy to unprotected global variable\r\n";
+		memcpy(memAccessible, arr, strlen(arr));
+		debug(&memAccessible[0]);
+		Yield();
+
+		loopCounter++;
+		if(loopCounter == 10)
+		{
+			debug("Memory fault in ..3 ..2 ..1\r\n");
+			memcpy(memFault, arr, strlen(arr));
+		}
+	} //end for
 }
 
+
+
+/*! This thread have float context.
+ * Additional registers will be saved. */
 void threadFuncFloat(void)
 {
 	float pi = M_PI;
@@ -69,9 +86,12 @@ void threadFuncFloat(void)
 
 		local /= ret;
 		ret += local;
-	}
+	} //end for
 }
 
+/*! Local stack overflow -
+ * will be found be supervisor.
+ * Thread will be restarted. */
 void stackOverflow(void)
 {
 	float a[16] = { M_PI };
@@ -89,12 +109,12 @@ int test()
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
 	core.Create(context1);
-#if(0)
+
 	::LaOS::Context context2;
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
-	Core.Create(context2);
-#endif
+	core.Create(context2);
+
 	::LaOS::Context floatContext;
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
@@ -111,40 +131,40 @@ int test()
 }
 
 #else
+uint32_t stack1[128];
+uint32_t stack2[128];
+uint32_t stack3[256];
 int test()
 {
-
+	::LaOS::Core& core = ::LaOS::Core::getInstance();
 	::LaOS::Context context1;
 	context1.stack = &stack1[0];
 	context1.stackSize = sizeof(stack1)/sizeof(uint32_t);
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
-	Core.Create(context1);
+	core.Create(context1);
 
 	::LaOS::Context context2;
 	context2.stack = &stack2[0];
 	context2.stackSize = sizeof(stack2)/sizeof(uint32_t);
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
-	Core.Create(context2);
+	core.Create(context2);
 
 	::LaOS::Context floatContext;
 	floatContext.stack = &stack3[0];
 	floatContext.stackSize = sizeof(stack3)/sizeof(uint32_t);
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
-	Core.Create(floatContext);
+	core.Create(floatContext);
 
 	for(;;)
-		Core.Yield();
+		Yield();
 
 	/* execution returns here after full circle */
 	return EXIT_SUCCESS;
 }
 #endif
-
-
-
 
 #ifdef __cplusplus
 }

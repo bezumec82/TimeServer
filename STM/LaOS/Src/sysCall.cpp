@@ -8,7 +8,8 @@ extern "C" {
 /*!
  * For future used - currently tied to asm SVC_Handler
  * but unused.
- * @param svc_num
+ * @param svc_num - number of SVC call
+ * number 0 is already taken by privilege change routine
  */
 __weak void SVC_Handler_C(uint32_t svc_num)
 {

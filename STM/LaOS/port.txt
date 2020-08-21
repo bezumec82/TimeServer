@@ -1,0 +1,34 @@
+Configuration must be done in file 'LaOSconfig.h'. 
+All explanations look inside.
+
+The base usage pattern is demonstrated in file 'main.cpp'.
+The idea is simple - show your thread functions to
+the core and it will cycle it for you.
+Don't forget to call 'Yeild', when the job is done.
+
+At the present moment solemn usage of OS 
+is to link it in your eclipse-based project.
+Just drug folder LaOS inside your project 
+and add 'LaOS/Inc' in 'Includes' :
+Properties -> C/C++ General -> Path and Symbols -> Includes
+
+To successfully compile your project, folder 'LaOS/support' 
+should be removed from sources. Add a filter:
+Properties -> C/C++ General -> Path and Symbols -> Source Location
+
+Inside folder '/support' provided fixed linker script
+and '..start.s' files. The main idea behind it to keep code in FLASH,
+and execute it from SRAM. Such an arrangement makes it possible to 
+organize the hot re-flash of MCU.
+In the present moment, only STM32H575 is supported.
+
+Core of OS is realized as signleton pattern,
+as far as you include it in your project - you have it.
+
+If you use STMCubeMX :
+ -  disable code generation for 'MemManage_Handler'
+    and 'SVC_Handler'
+
+STM32 HAL uses global structures to access peripheral - 
+to make these structures accessible add macro 'REMOVE_PROTECTION'
+before the definition.
