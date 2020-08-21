@@ -41,7 +41,11 @@ REMOVE_PROTECTION int loopCounter = 0;
 /*! Local and global variables */
 void threadFunc2(void)
 {
-	char * I = "I."; //local variable
+	uint32_t * test = (uint32_t *)upMalloc(256);
+	test++;
+	upFree(--test);
+
+	const char * I = "I."; //local variable
 	for(;;)
 	{
 		const char * C = "C."; //scoped variable

@@ -36,7 +36,7 @@ void MemManage_Handler(void)
 			scb_cfsr->MMARVALID
 			);
 	if(scb_cfsr->MMARVALID)
-		PRINTF("MMFAR = 0x%lx", scbMmfar);
+		PRINTF("MMFAR = 0x%lx\r\n", scbMmfar);
 	else
 		PRINTF("No memory location info.\r\n");
 	//TODO : send to reset

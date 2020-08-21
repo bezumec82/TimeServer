@@ -32,6 +32,8 @@ void Core::ConfigMPU()
 		0				<< MPU_RASR_XN_Pos		; /* bit 28*/
 
 	/* Configure MPU for unprivileged stack */
+	//I suppose it can be done simpler -
+	//look sysmem.c for example
 	uint32_t addrStart = 0;
 	uint32_t addrEnd = 0;
 	__asm__ volatile ("ldr %[addr], =_sustack"
@@ -58,12 +60,34 @@ void Core::ConfigMPU()
 		/* Disable instruction fetch */
 		0				<< MPU_RASR_XN_Pos		; /* bit 28*/
 
+	/* Configure MPU for heap */
+	uint32_t heapStart = 0;
+	__asm__ volatile ("ldr %[hStart], =_uphend"
+	:[hStart]"=r"(heapStart)
+	:
+	:"r0");
+
+	MPU->RNR = RNR++;
+	MPU->RBAR = heapStart;
+	MPU->RASR =
+		MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos		| /* bit 0 */
+		ARM_MPU_REGION_SIZE_8KB << MPU_RASR_SIZE_Pos	| /* bits 5:1 */
+		0 				<< MPU_RASR_SRD_Pos 	| /* bits 15:8 */
+		1 				<< MPU_RASR_B_Pos	 	| /* bufferable - bit 16 */
+		1 				<< MPU_RASR_C_Pos 		| /* cacheable - bit17 */
+		1 				<< MPU_RASR_S_Pos 		| /* shareable - it18 */
+		0 				<< MPU_RASR_TEX_Pos 	| /* bits 21:19 */
+						/* Full access */
+		ARM_MPU_AP_FULL << MPU_RASR_AP_Pos		| /* bits 26:24 */
+		/* Disable instruction fetch */
+		0				<< MPU_RASR_XN_Pos		; /* bit 28*/
+
 	/* Configure MPU for peripheral */
 	MPU->RNR = RNR++;
 	MPU->RBAR = PERIPH_BASE; //STM32 HAL
 	MPU->RASR =
-		MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos 	| /* bit 0 */
-		ARM_MPU_REGION_SIZE_512MB << MPU_RASR_SIZE_Pos 	| /* bits 5:1 */
+		MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos		| /* bit 0 */
+		ARM_MPU_REGION_SIZE_512MB << MPU_RASR_SIZE_Pos	| /* bits 5:1 */
 		0 				<< MPU_RASR_SRD_Pos 	| /* bits 15:8 */
 		1 				<< MPU_RASR_B_Pos	 	| /* bufferable - bit 16 */
 		1 				<< MPU_RASR_C_Pos 		| /* cacheable - bit17 */
@@ -78,5 +102,4 @@ void Core::ConfigMPU()
 	ARM_MPU_Enable(0);
 	__DSB();
 	__ISB();
-
 }

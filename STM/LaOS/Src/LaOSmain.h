@@ -17,6 +17,11 @@ void SVC_Handler(void); //reside in asm
 void SVC_Handler_C(uint32_t svc_num); //can be redefined
 void MemManage_Handler(void);
 
+#include <stdio.h>
+caddr_t _sbrk(int incr);
+void * upMalloc(size_t size);
+void upFree (void * ptr);
+
 #ifdef __cplusplus
 }
 #endif

@@ -32,3 +32,5 @@ If you use STMCubeMX :
 STM32 HAL uses global structures to access peripheral - 
 to make these structures accessible add macro 'REMOVE_PROTECTION'
 before the definition.
+
+File 'sysmem.c' should be removed. File 'sysmem.cpp' its substitute.
