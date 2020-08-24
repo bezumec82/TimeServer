@@ -117,7 +117,7 @@ void Core::PrepareStack( Context& context )
 	/* Let's pretend that r0-r12 are stacked at the beginning */
 	context.stack -= REGS_AMNT;
 	context.stack--;
-	*(context.stack) = THREAD_CONTROL;
+	*(context.stack) = context.threadLevel;
 }
 
 void Yield()

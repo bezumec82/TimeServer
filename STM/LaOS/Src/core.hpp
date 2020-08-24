@@ -28,11 +28,12 @@
 /* After reset, the CONTROL register is 0.
  * This means the Thread mode uses the Main Stack Pointer as Stack Pointer
  * and Thread mode has privileged accesses */
-#define HEAD_CONTROL		0x0 //Privileged + main stack
+#define HEAD_CONTROL			0x0 //Privileged + main stack
 /* Un-privileged access will be set in yield */
-#define THREAD_CONTROL		0x3	//un-privileged + process stack
-#define MPU_REGIONS_CNT		8
-#define PROTECTION_WORD		0xdeadbeaf
+#define THREAD_UNPRIVILEGED		0x3	//un-privileged + process stack
+#define THREAD_PRIVILEGED		0x2
+#define MPU_REGIONS_CNT			8
+#define PROTECTION_WORD			0xdeadbeaf
 
 
 extern "C"
@@ -75,6 +76,9 @@ namespace LaOS
 		const char * name;
 		ThreadFunc threadFunc;
 		uint32_t threadNumber; /*!< Used to find its place in stack pool */
+#if(PROTECTED_STACK)
+		uint32_t threadLevel;
+#endif
 	};
 
 	class Core

@@ -10,20 +10,25 @@ Main features :
     .text section is accessible in read only mode,
     threads stack is removed to separate section .unprivileged_stack -
     look '...FLASH.ld' file.
+ -  Two types of threads could be created - privileged and unprivileged.
 
 Drawback :
  -  If you want to use it, you should think
- -  Cuse most of the modern MCU market is consists of solutions 
+ -  Couse most of the modern MCU market is consists of solutions 
     based on Cortex-Mx cores, no other ports/MCU support is provided.
     And I have no plans to support computer history.
  -  In the present state, no 'cmake' or 'make' or other building tools
     are supported. The reason is, that most of the Cortex-Mx solutions, 
-    developed around some kind of eclipse ports - codegenerators.
-    No sane system is supported by the MCU providers.
+    developed around some kind of eclipse ports/codegenerators.
+    No sane system is supported by the MCU providers in the first place.
 
 Specifics :
- -  Technically you can't use 'stdlib' calls, cause
-    its functions internally set global variable 'errno'
-    on behalf of an un-privileged caller. 
-
+ -  Technically you can't use 'stdlib' calls inside un-privileged threads,
+    cause its functions internally set global variable 'errno'
+    on behalf of an un-privileged caller.
+ -  You can use 'stdlib' and other libraries inside privleged threads.
+    STM HAL can(must) be used inside unprivileged threads - look tests.
+ -  Cause unprivileged stack is separated, its size evaluated at compile-time,
+    the user should say how many thread he is willing to create in 'LaOSconfig.h'.
+    More than necessary can be declared, but it is wasteful.
 

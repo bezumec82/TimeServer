@@ -5,7 +5,10 @@
 #if (PROTECTED_STACK)
 # define STATIC_STACK_PROTECTION			true
 # define THREAD_STACK_SIZE_WORDS			256
-# define THREAD_AMNT						4
+/* User should provide information about amount of threads
+ * he is willing to create. It it will be declared less threads,
+ * then attempt to create extra thread will fail. */
+# define THREAD_AMNT						5
 # define PROTECTION_ZONE_WORDS				64
 # if (PROTECTION_ZONE_WORDS < 32)
 #  error "Protection zone too low"

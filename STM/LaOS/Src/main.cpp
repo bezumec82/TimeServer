@@ -41,13 +41,15 @@ REMOVE_PROTECTION int loopCounter = 0;
 /*! Local and global variables */
 void threadFunc2(void)
 {
-	uint32_t * test = (uint32_t *)upMalloc(256);
-	test++;
-	upFree(--test);
-
 	const char * I = "I."; //local variable
 	for(;;)
 	{
+		/*--- Heap test ---*/
+		uint32_t * test1 = (uint32_t *)upMalloc(256);
+		test1++;
+		uint32_t * test2 = (uint32_t *)upMalloc(512);
+		test2++;
+
 		const char * C = "C."; //scoped variable
 		debug(I);
 		Yield();
@@ -62,6 +64,9 @@ void threadFunc2(void)
 		debug(&memAccessible[0]);
 		Yield();
 
+		upFree(--test1);
+		upFree(--test2);
+
 		loopCounter++;
 		if(loopCounter == 10)
 		{
@@ -70,8 +75,6 @@ void threadFunc2(void)
 		}
 	} //end for
 }
-
-
 
 /*! This thread have float context.
  * Additional registers will be saved. */
@@ -105,6 +108,19 @@ void stackOverflow(void)
 	stackOverflow();
 }
 
+void privlegedThread(void)
+{
+	printf("\r\nThis is privileged thread.\r\n"
+			"It can use 'stdlib'.\r\n"
+			"But be careful it has access to all resources of the core.");
+	for(;;)
+	{
+		printf("Yield from privileged thread.\r\n");
+		Yield();
+	}
+
+}
+
 #if PROTECTED_STACK
 int test()
 {
@@ -112,22 +128,33 @@ int test()
 	::LaOS::Context context1;
 	context1.threadFunc = threadFunc1;
 	context1.name = "Context 1";
+	context1.threadLevel = THREAD_UNPRIVILEGED;
 	core.Create(context1);
 
 	::LaOS::Context context2;
 	context2.threadFunc = threadFunc2;
 	context2.name = "Context 2";
+	context2.threadLevel = THREAD_UNPRIVILEGED;
 	core.Create(context2);
 
 	::LaOS::Context floatContext;
 	floatContext.threadFunc = threadFuncFloat;
 	floatContext.name = "Float context";
+	floatContext.threadLevel = THREAD_UNPRIVILEGED;
 	core.Create(floatContext);
 
 	::LaOS::Context stackOverflowContext;
 	stackOverflowContext.threadFunc = stackOverflow;
 	stackOverflowContext.name = "Stack overflow context";
+	stackOverflowContext.threadLevel = THREAD_UNPRIVILEGED;
 	core.Create(stackOverflowContext);
+
+	::LaOS::Context privContext;
+	privContext.threadFunc = privlegedThread;
+	privContext.name = "Privileged context";
+	/* Change for un-privileged and look what happens. */
+	privContext.threadLevel = THREAD_PRIVILEGED;
+	core.Create(privContext);
 
 	core.Start();
 	/* execution returns here after full circle */
