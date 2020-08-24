@@ -5,11 +5,14 @@
 #include <algorithm>
 
 #include "core.hpp"
+#include "atomic.hpp"
 #include "debug.hpp"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UNPRIVILEGED_ATOMIC ::Atomic flag __attribute__(( aligned(4) )) = 5;
 
 /*! No stack */
 void threadFunc1(void)
@@ -29,6 +32,9 @@ void threadFunc1(void)
 
 		debug("0.");
 		Yield();
+		/* Atomic */
+		uint32_t val = flag.load();
+		flag.store(--val);
 	}
 }
 
@@ -93,6 +99,11 @@ void threadFuncFloat(void)
 
 		local /= ret;
 		ret += local;
+
+		/* Atomic */
+		uint32_t val = flag.load();
+		flag.store(++val);
+
 	} //end for
 }
 

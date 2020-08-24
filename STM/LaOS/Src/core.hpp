@@ -84,6 +84,7 @@ namespace LaOS
 	class Core
 	{
 		friend void ::Yield();
+		friend void ::MemManage_Handler(void); //to access current
 	private : /*--- Constructors/Destructors ---*/
 		Core();
 

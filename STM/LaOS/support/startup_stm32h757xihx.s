@@ -1,6 +1,6 @@
 /* Initialization code - at first stage copies
- * all sections from FLASH to SRAM
- */
+ * all sections from FLASH to SRAM */
+
   .syntax unified
   .cpu cortex-m7
   .fpu softvfp
@@ -24,11 +24,11 @@ defined in linker script */
 
 /**
  * @brief  This is the code that gets called when the processor first
- *          starts execution following a reset event. Only the absolutely
- *          necessary set is performed, after which the application
- *          supplied main() routine is called. 
+ *         starts execution following a reset event. Only the absolutely
+ *         necessary set is performed, after which the application
+ *         supplied main() routine is called.
  * @param  None
- * @retval : None
+ * @retval None
 */
 
     .section  .reset_handler, "ax",%progbits

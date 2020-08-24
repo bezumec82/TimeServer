@@ -11,7 +11,7 @@ Main features :
     threads stack is removed to separate section .unprivileged_stack -
     look '...FLASH.ld' file.
  -  Two types of threads could be created - privileged and unprivileged.
-
+ -  Support 'true' atomic and semaphore based on 'ldrex'/'strex'
 Drawback :
  -  If you want to use it, you should think
  -  Couse most of the modern MCU market is consists of solutions 

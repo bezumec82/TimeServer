@@ -3,6 +3,7 @@
  * - load code from flash to RAM
  * - DMA has separate region
  * - Unprivileged stack region for threads
+ * - Unprivileged piece of DTCM
  */
 
 /* Entry Point */
@@ -115,7 +116,19 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >FLASHA
 
-  /* used by the startup to initialize data */
+    /* Atomic variables accessible to unprivileged threads */
+    .unprivileged_atomic :
+    {
+    . = ALIGN(8);
+    PROVIDE (_upatcstart = .);
+    *(.unprivileged_atomic)
+    PROVIDE (_upatcend = .);
+    . = ALIGN(256); 
+        /* Protection gap until data section 
+         * User should consider it for his application. */
+    } >DTCM
+
+  /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
   /* Initialized data sections goes into RAM, load LMA copy after code */
   .data : 
@@ -129,7 +142,6 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >DTCM AT> FLASHA
 
-  
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
@@ -145,7 +157,7 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >DTCM
-
+  
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -155,12 +167,12 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >DTCM
+  } >DTCM 
 
     .dma_buffer :
     {
-        . = ALIGN(4);
-        *(.dma_buffer)
+      . = ALIGN(4);
+      *(.dma_buffer)
     } >SRAM4
 
     /* !!! Attention !!! 

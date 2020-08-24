@@ -4,7 +4,7 @@
 __attribute__((section (".unprivileged_stack")))
 uint32_t stackPool[PROTECTION_ZONE_WORDS + \
 	(THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * THREAD_AMNT]  \
-	__attribute__((aligned (PROTECTION_ZONE_WORDS * 4)));
+	__attribute__(( aligned(32) ));
 #endif
 
 using namespace LaOS;
@@ -122,7 +122,7 @@ void Core::PrepareStack( Context& context )
 
 void Yield()
 {
-	::LaOS::Core& core = ::Core::getInstance();
+	::LaOS::Core& core = ::LaOS::Core::getInstance();
 	asmYield((void *)&(core.current), (void*)(core.current->next));
 }
 

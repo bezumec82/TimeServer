@@ -9,20 +9,35 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x20020000;    /* end of RAM */
+_estack = 0x20020000;           /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200 ;      /* required amount of heap  */
-_Min_Stack_Size = 0x400 ; /* required amount of stack */
+_Min_Heap_Size = 0x200 ;        /* required amount of heap  */
+_Min_Stack_Size = 0x400 ;       /* required amount of stack */
 
 /* Specify the memory areas */
 MEMORY
 {
-FLASH (rx)     : ORIGIN = 0x08000000, LENGTH = 1024K
-DTCM (xrw)     : ORIGIN = 0x20000000, LENGTH = 128K
+/* D1 domain - M7 */
 ITCM (xrw)     : ORIGIN = 0x00000000, LENGTH = 64K
+
+/* 2MiB of FLASH in two banks */
+FLASHA (rx)    : ORIGIN = 0x08000000, LENGTH = 1024K
+FLASHB (rx)    : ORIGIN = 0x08200000, LENGTH = 1024K
+
+DTCM (xrw)     : ORIGIN = 0x20000000, LENGTH = 128K
+
+/* Divide it in two parts */
 AXI_SRAM1(xrw) : ORIGIN = 0x24000000, LENGTH = 256K
-AXI_SRAM2(xrw) : ORIGIN = 0x24040000, LENGTH = 512K
+AXI_SRAM2(xrw) : ORIGIN = 0x24040000, LENGTH = 256K
+
+/* D2 domain - M4, DMA1, DMA2, ETH, SD2, USB */
+SRAM1 (xrw)    : ORIGIN = 0x30000000, LENGTH = 128K
+SRAM2 (xrw)    : ORIGIN = 0x30020000, LENGTH = 128K
+SRAM3 (xrw)    : ORIGIN = 0x30040000, LENGTH = 32K
+
+/* D3 domain - BDMA */
 SRAM4 (xrw)    : ORIGIN = 0x38000000, LENGTH = 64K
+BUPSRAM (xrw)  : ORIGIN = 0x38800000, LENGTH = 4K
 }
 
 /* Define output sections */
@@ -36,14 +51,14 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     _evtable = .;
     . = ALIGN(4);
-  } >AXI_SRAM1 AT> FLASH
+  } >AXI_SRAM1 AT> FLASHA
 
   .reset_handler :
   {
     . = ALIGN(4);
     KEEP(*(.reset_handler))
     . = ALIGN(4);
-  } >FLASH
+  } >FLASHA
   
   _tram = LOADADDR(.text);
   .text :
@@ -61,7 +76,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >AXI_SRAM1 AT> FLASH
+  } >AXI_SRAM1 AT> FLASHA
 
   /* Constant data goes into FLASH */
   .rodata :
@@ -70,39 +85,50 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASHA
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASHA
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >FLASHA
 
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >FLASHA
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >FLASHA
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >FLASHA
+
+  /* Atomic variables accessible to unprivileged threads*/
+  .unprivileged_atomic :
+  {
+    . = ALIGN(8);
+    PROVIDE (_upatcstart = .);
+    *(.unprivileged_atomic)
+    PROVIDE (_upatcend = .);
+    . = ALIGN(256); 
+        /* Protection gap until data section 
+         * User should consider it for his application. */
+  } >DTCM
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
-
   /* Initialized data sections goes into RAM, load LMA copy after code */
   .data : 
   {
@@ -113,7 +139,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >DTCM AT> FLASH
+  } >DTCM AT> FLASHA
 
   
   /* Uninitialized data section */
@@ -131,7 +157,7 @@ SECTIONS
     _ebss = .;         /* define a global symbol at bss end */
     __bss_end__ = _ebss;
   } >DTCM
-
+  
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -141,7 +167,7 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >DTCM
+  } >DTCM 
 
     .dma_buffer :
     {
@@ -149,12 +175,28 @@ SECTIONS
         *(.dma_buffer)
     } >SRAM4
 
+    /* !!! Attention !!! 
+    The start address of an MPU region 
+    must be multiple of the MPU size */
+    .unprivileged_heap :
+    {
+        . = ALIGN(8192);
+        PROVIDE ( _uphstart = . );
+        . = . + 8192;
+        PROVIDE ( _uphend = . );
+    } > AXI_SRAM2
+    
+    .separator :
+    {
+        . = . + 32;
+    } > AXI_SRAM2
+    
     .unprivileged_stack :
     {
-        . = ALIGN(1024);
-        _sustack = .;
+        . = ALIGN(8192);
+        PROVIDE ( _sustack = . );
         *(.unprivileged_stack)
-        _eustack = .;
+        PROVIDE ( _eustack = . );
     } > AXI_SRAM2
     
   /* Remove information from the standard libraries */

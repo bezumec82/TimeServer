@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 #define REMOVE_PROTECTION __attribute__((section (".unprivileged_stack")))
+#define UNPRIVILEGED_ATOMIC __attribute__((section (".unprivileged_atomic")))
 
 /* Your cpp function should be exported to C code from here */
 int test();
