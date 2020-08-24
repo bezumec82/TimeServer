@@ -3,11 +3,12 @@
 uint8_t getRegionSize(uint32_t size)
 {
 	uint8_t regionSize = 0;
-	while(size)
-	{
-		size /= 2;
-		regionSize++;
-	}
+	/* Count leading zeroes */
+	uint8_t leadZeroes = __builtin_clz(size);
+	regionSize = 32 - leadZeroes; //get power of 2
+
+	if( size == (uint32_t)( 1<<(regionSize-1) ) )
+		regionSize--;
 	switch(regionSize)
 	{
 		case 0:
@@ -39,7 +40,7 @@ uint8_t getRegionSize(uint32_t size)
 			return ARM_MPU_REGION_SIZE_32KB;
 		case 16:
 			return ARM_MPU_REGION_SIZE_64KB;
-		default : /* Actually there are the same numbers under this definitions */
+		default : /* I'm tired */
 			return regionSize;
 	}
 }

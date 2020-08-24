@@ -36,11 +36,10 @@ void upFree (void * ptr)
 			:"r0");
 }
 
-
 caddr_t _sbrk(int incr)
 {
 	extern char uphstart asm("_uphstart");
-	extern char uphend asm("_uphend");
+	extern char uphend   asm("_uphend");
 
 	static char * 	curr_heap_end;
 	char * 			prev_heap_end;

@@ -20,4 +20,6 @@
 #  error "Protection zone alignment error"
 # endif
 
+#define UNPROTECTED_HEAP_SIZE				8192
+
 #endif
