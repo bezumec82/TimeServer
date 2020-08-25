@@ -44,13 +44,13 @@ BUPSRAM (xrw)  : ORIGIN = 0x38800000, LENGTH = 4K
 /* Define output sections */
 SECTIONS
 {
-  _vtram = LOADADDR(.isr_vector);
+  _vtFlash = LOADADDR(.isr_vector);
   .isr_vector :
   {
     . = ALIGN(4);
-    _svtable = .;
+    _vtStart = .;
     KEEP(*(.isr_vector)) /* Startup code */
-    _evtable = .;
+    _vtEnd = .;
     . = ALIGN(4);
   } >AXI_SRAM1 AT> FLASHA
 
@@ -61,11 +61,11 @@ SECTIONS
     . = ALIGN(4);
   } >FLASHA
   
-  _tram = LOADADDR(.text);
+  _textFlash = LOADADDR(.text);
   .text :
   {
     . = ALIGN(4);
-    _stext = .;
+    _startText = .;
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
@@ -76,7 +76,7 @@ SECTIONS
     KEEP (*(.fini))
 
     . = ALIGN(4);
-    _etext = .;        /* define a global symbols at end of code */
+    _endText = .;        /* define a global symbols at end of code */
   } >AXI_SRAM1 AT> FLASHA
 
   /* Constant data goes into FLASH */
@@ -118,44 +118,55 @@ SECTIONS
 
     /* Atomic variables accessible by unprivileged threads.
      * Must appear first in DTCM due to MPU alignment. 
-     * Can't be placed in any SRAM - ldrex/strex causes hard fault */
-    .unprivileged_atomic :
+     * Can't be placed in any SRAM - ldrex/strex causes hard fault.
+     * huart placed in any SRAM doesn't work.
+     * Keep it as little as possible. */
+    _upDataFlash = LOADADDR(.unprivileged_data);
+    .unprivileged_data :
     {
-    . = ALIGN(8);
-    PROVIDE (_upatcstart = .);
-    *(.unprivileged_atomic)
-    PROVIDE (_upatcend = .);
-    . = ALIGN(256);
-        /* Protection gap until data section 
-         * User should consider it for his application. */
+    . = ALIGN(4);
+    PROVIDE (_upDataStart = .);
+    *(.unprivileged_data)
+    PROVIDE (_upDataEnd = .);
+    } >DTCM AT> FLASHA
+    
+    .unprivileged_bss :
+    {
+    . = ALIGN(4);
+    PROVIDE (_upBssStart = .);
+    *(.unprivileged_bss)
+    
+    . = ALIGN(512);     /* Set allign according mpu region */
+                        /* Protection gap until data section 
+                         * User should consider it for his application. */
+    PROVIDE (_upBssEnd = .);        
     } >DTCM
 
   /* Initialized data will be copied from FLASH to SRAM */
-  _sidata = LOADADDR(.data);
+  _dataFlash = LOADADDR(.data);
   .data :
   {
     . = ALIGN(4);
-    _sdata = .;        /* create a global symbol at data start */
+    _dataStart = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
     *(.data*)          /* .data* sections */
     . = ALIGN(4);
-    _edata = .;        /* define a global symbol at data end */
+    _dataEnd = .;        /* define a global symbol at data end */
   } >DTCM AT> FLASHA
 
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
   {
-    /* This is used by the startup in order to initialize the .bss secion */
-    _sbss = .;         /* define a global symbol at bss start */
-    __bss_start__ = _sbss;
+    PROVIDE( _bssStart = .);
+    __bss_start__ = _bssStart;
     *(.bss)
     *(.bss*)
     *(COMMON)
 
     . = ALIGN(4);
-    _ebss = .;         /* define a global symbol at bss end */
-    __bss_end__ = _ebss;
+    PROVIDE( _bssEnd = . );
+    __bss_end__ = _bssEnd;
   } >DTCM
   
   /* User_heap_stack section, used to check that there is enough RAM left */
@@ -176,26 +187,35 @@ SECTIONS
       *(.dma_buffer)
     } >SRAM4
 
-    /* !!! Attention !!! 
+
+   /* !!! Attention !!! 
     The start address of an MPU region 
-    must be multiple of the MPU size */
-    .unprivileged_heap :
-    {
-        . = ALIGN(8192);
-        PROVIDE ( _uphstart = . );
-        . = . + 8192;
-        PROVIDE ( _uphend = . );
-    } > AXI_SRAM2
-    
-    /* Can't be placed in AXI_SRAM - h7 specifics
-     * If placed in AXI_SRAM will work only in debug mode */
+    must be multiple of the MPU size
+    Heap after stack - 
+    heap is known here, stack not */
+     
+    /* Only for unprivileged threads */
     .unprivileged_stack :
     {
         . = ALIGN(8192);
-        PROVIDE ( _sustack = . );
+        PROVIDE ( _upStackStart = . );
         *(.unprivileged_stack)
-        PROVIDE ( _eustack = . );
-    } > SRAM1
+        PROVIDE ( _upStackEnd = . );
+    } > AXI_SRAM2
+    
+    .separator :
+    {
+        . = . + 32;
+    }
+    
+    .unprivileged_heap :
+    {
+        . = ALIGN(8192);
+        PROVIDE ( _upHeapStart = . );
+        . = . + 8192;
+        PROVIDE ( _upHeapEnd = . );
+    } > AXI_SRAM2
+
     
   /* Remove information from the standard libraries */
   /DISCARD/ :

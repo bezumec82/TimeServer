@@ -38,69 +38,38 @@ defined in linker script */
 Reset_Handler:
   ldr   sp, =_estack      /* set stack pointer */
 
-/* Copy the data segment initializers from flash to SRAM */  
-  movs  r1, #0
-  b  LoopCopyDataInit
+  ldr r0, =_bssStart
+  ldr r1, =_bssEnd
+  bl zeroOutSection
 
-CopyDataInit:
-  ldr  r3, =_sidata
-  ldr  r3, [r3, r1]
-  str  r3, [r0, r1]
-  adds  r1, r1, #4
-    
-LoopCopyDataInit:
-  ldr  r0, =_sdata
-  ldr  r3, =_edata
-  adds  r2, r0, r1
-  cmp  r2, r3
-  bcc  CopyDataInit
-  ldr  r2, =_sbss
-  b  LoopFillZerobss
-/* Zero fill the bss segment. */  
-FillZerobss:
-  movs  r3, #0
-  str  r3, [r2], #4
-    
-LoopFillZerobss:
-  ldr  r3, = _ebss
-  cmp  r2, r3
-  bcc  FillZerobss
+  ldr r0, =_upBssStart
+  ldr r1, =_upBssEnd
+  bl zeroOutSection
 
-#if(1) /* Copy text segment from FLASH to RAM */
-  movs  r1, #0
-  b LoopCopyText
+  /* Copy text segment from FLASH to RAM */
+  ldr r0, =_textFlash
+  ldr r1, =_startText
+  ldr r2, =_endText
+  bl copySection
 
-CopyText:
-  ldr  r3, =_tram
-  ldr  r3, [r3, r1]
-  str  r3, [r0, r1]
-  adds  r1, r1, #4
+  /* Copy vector table from FLASH to RAM */
+  ldr r0, =_vtFlash
+  ldr r1, =_vtStart
+  ldr r2, =_vtEnd
+  bl copySection
 
-LoopCopyText:
-  ldr  r0, =_stext
-  ldr  r3, =_etext
-  adds  r2, r0, r1
-  cmp  r2, r3
-  bcc  CopyText
-#endif
+  /* Copy data segment from FLASH to RAM */
+  ldr r0, =_dataFlash
+  ldr r1, =_dataStart
+  ldr r2, =_dataEnd
+  bl copySection
 
-#if(1) /* Copy vector table from FLASH to RAM */
-  movs  r1, #0
-  b LoopCopyVTable
+  ldr r0, =_upDataFlash
+  ldr r1, =_upDataStart
+  ldr r2, =_upDataEnd
+  bl copySection
 
-CopyVTable:
-  ldr  r3, =_vtram
-  ldr  r3, [r3, r1]
-  str  r3, [r0, r1]
-  adds  r1, r1, #4
 
-LoopCopyVTable:
-  ldr  r0, =_svtable
-  ldr  r3, =_evtable
-  adds  r2, r0, r1
-  cmp  r2, r3
-  bcc  CopyVTable
-#endif
 
 /* Call the clock system intitialization function.*/
   bl  SystemInit

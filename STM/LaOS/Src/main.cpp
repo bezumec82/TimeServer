@@ -98,7 +98,7 @@ void allocTestFunc()
     }
 }
 
-UNPRIVILEGED_ATOMIC
+UNPRIVILEGED_DATA
 ::Atomic flag __attribute__(( aligned(4) )) = 5;
 void atomicFunc1(void)
 {
@@ -133,8 +133,8 @@ void stackOverflow(void)
 
 char memFault[128] = {};    //global variable not accessible
                             //unless :
-REMOVE_PROTECTION char memAccessible[128] = {};
-REMOVE_PROTECTION int loopCounter = 0;
+UNPRIVILEGED_BSS char memAccessible[128] = {};
+UNPRIVILEGED_BSS int loopCounter = 0;
 /*!
  * This function shows how MPU protects from
  * Data access violation

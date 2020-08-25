@@ -107,23 +107,23 @@ void Core::ConfigMPU()
         1                << MPU_RASR_XN_Pos        ; /* bit 28 */
 
     /*---------------------------*/
-    /*--- Unprivileged data ---*/
+    /*--- Unprivileged data/bss ---*/
     /*---------------------------*/
     uint32_t upDataStart = 0;
-    uint32_t upDataEnd = 0;
+    uint32_t upBssEnd = 0;
     __asm__ volatile ("ldr %[addr], =_upDataStart"
             :[addr]"=r"(upDataStart)
             :
             :"r0");
-    __asm__ volatile ("ldr %[addr], =_upDataEnd"
-            :[addr]"=r"(upDataEnd)
+    __asm__ volatile ("ldr %[addr], =_upBssEnd"
+            :[addr]"=r"(upBssEnd)
             :
             :"r0");
     MPU->RNR = RNR++;
     MPU->RBAR = upDataStart;
     MPU->RASR =
         MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos                  | /* bit 0 */
-        getRegionSize(upDataEnd - upDataStart) << MPU_RASR_SIZE_Pos | /* bits 5:1 */
+        getRegionSize(upBssEnd - upDataStart) << MPU_RASR_SIZE_Pos | /* bits 5:1 */
         0                 << MPU_RASR_SRD_Pos       | /* bits 15:8 */
         0                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
         1                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */

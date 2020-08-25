@@ -94,7 +94,7 @@ SRAM_HandleTypeDef hsram2;
 SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
-REMOVE_PROTECTION
+UNPRIVILEGED_BSS
 UART_HandleTypeDef huart1 __attribute__(( aligned(4) ));
 /* USER CODE END PV */
 
@@ -129,7 +129,7 @@ static void MX_USB_OTG_HS_PCD_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-    memset(&huart1, 0x0, sizeof(huart1));
+
   /* USER CODE END 1 */
   /* USER CODE BEGIN Boot_Mode_Sequence_0 */
     int32_t timeout;
