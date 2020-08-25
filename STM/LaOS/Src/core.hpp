@@ -91,13 +91,17 @@ namespace LaOS
 	public : /*--- Methods ---*/
 		static Core& getInstance();
 		void Create( Context& );
-		void Start();
-	private :
-		static void Supervisor( Core * );
-		void PrepareStack( Context& );
-		void CheckStack();
 		void Kill( Context& );
+#if(PROTECTED_STACK)
+		void Start();
+#endif
+	private :
+		void PrepareStack( Context& );
+#if(PROTECTED_STACK)
+		static void Supervisor( Core * );
+		void CheckStack();
 		void ConfigMPU();
+#endif
 	private : /*--- Variables ---*/
 		Context head = {};
 		Context * current = nullptr;

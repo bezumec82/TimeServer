@@ -3,8 +3,8 @@
 #if PROTECTED_STACK
 __attribute__((section (".unprivileged_stack")))
 uint32_t stackPool[PROTECTION_ZONE_WORDS + \
-	(THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * THREAD_AMNT]  \
-	__attribute__(( aligned(32) ));
+    (THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * THREAD_AMNT]  \
+    __attribute__(( aligned(32) ));
 #endif
 
 using namespace LaOS;
@@ -14,43 +14,43 @@ using namespace LaOS;
  */
 Core& Core::getInstance()
 {
-	static Core core;
-	return core;
+    static Core core;
+    return core;
 }
 
 Core::Core()
 {
-	/* Initialize head */
-	head.name = "Head node/Idle thread";
-	head.threadNumber = 0xbadf00d;
-	/* Head context will be executed directly from 'main'
-	 * calling Yield will start it from main */
+    /* Initialize head */
+    head.name = "Head node/Idle thread";
+    head.threadNumber = 0xbadf00d;
+    /* Head context will be executed directly from 'main'
+     * calling Yield will start it from main */
 #if(PROTECTED_STACK)
-	/* Prepare initial stack context */
-	/* Descending full stack */
-	/* Initial stack content must be :
-	 * pc -> r12..r0 -> control */
-	head.stack = &headStack[0];
-	head.stackSize = sizeof(headStack)/sizeof(uint32_t);
-	//Place protection at bottom of stack - just in case
-	head.stack[0] = PROTECTION_WORD;
-	head.stack = &head.stack[0] + head.stackSize;
-	/* Place pc */
-	head.stack--;
-	*(head.stack) =
-		reinterpret_cast<uint32_t>(Supervisor);
-	/* Let's pretend that r0-r12 are stacked at the beginning */
-	head.stack -= REGS_AMNT;
-	/* Place 'Supervisor' parameter to r0 */
-	*(head.stack) = reinterpret_cast<uint32_t>(this);
-	head.stack--;
-	*(head.stack) = HEAD_CONTROL;
+    /* Prepare initial stack context */
+    /* Descending full stack */
+    /* Initial stack content must be :
+     * pc -> r12..r0 -> control */
+    head.stack = &headStack[0];
+    head.stackSize = sizeof(headStack)/sizeof(uint32_t);
+    //Place protection at bottom of stack - just in case
+    head.stack[0] = PROTECTION_WORD;
+    head.stack = &head.stack[0] + head.stackSize;
+    /* Place pc */
+    head.stack--;
+    *(head.stack) =
+        reinterpret_cast<uint32_t>(Supervisor);
+    /* Let's pretend that r0-r12 are stacked at the beginning */
+    head.stack -= REGS_AMNT;
+    /* Place 'Supervisor' parameter to r0 */
+    *(head.stack) = reinterpret_cast<uint32_t>(this);
+    head.stack--;
+    *(head.stack) = HEAD_CONTROL;
 #endif
-	/* Connect to itself */
-	head.next = &head;
-	head.prev = &head;
-	/* Initial setting */
-	current = &head;
+    /* Connect to itself */
+    head.next = &head;
+    head.prev = &head;
+    /* Initial setting */
+    current = &head;
 }
 
 /*!
@@ -64,124 +64,128 @@ void Core::Create( Context& context )
 {
 #if(PROTECTED_STACK)
 
-	if(threadCount == THREAD_AMNT)
-	{
-		PRINTF("Thread amount is bigger than declared.\r\n");
-		return;
-	}
+    if(threadCount == THREAD_AMNT)
+    {
+        PRINTF("Thread amount is bigger than declared.\r\n");
+        return;
+    }
 #else
-	if(context.stackSize == 0) //TODO: less than min necessary amount
-	{
-		PRINTF("Stuck size is too low.\r\n")
-		return;
-	}
-	ALIGN(context.stackSize);
+    if(context.stackSize == 0) //TODO: less than min necessary amount
+    {
+        PRINTF("Stuck size is too low.\r\n");
+        return;
+    }
+    ALIGN(context.stackSize);
 #endif
 
-	/* Should be done here - 'PrepareStack' is used for restart */
-	context.threadNumber = threadCount;
-	/* User must provide thread function, name and stack in some config */
-	PrepareStack(context);
+    /* Should be done here - 'PrepareStack' is used for restart */
+    context.threadNumber = threadCount;
+    /* User must provide thread function, name and stack in some config */
+    PrepareStack(context);
 
-	/* Can be optimized, but will be less obvious */
-	Context * last = head.prev;
-	last->next = &context;
-	context.next = &head;
-	context.prev = last;
-	head.prev = &context;
-	threadCount++;
+    /* Can be optimized, but will be less obvious */
+    Context * last = head.prev;
+    last->next = &context;
+    context.next = &head;
+    context.prev = last;
+    head.prev = &context;
+    threadCount++;
 }
 
 void Core::PrepareStack( Context& context )
 {
 #if (PROTECTED_STACK)
-	/* The same formula will be used to allocate stack after thread fault */
-	context.stack = &stackPool[0] + PROTECTION_ZONE_WORDS + \
-	(THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * context.threadNumber;
-	//Place protection at bottom of stack
-	context.stack[0] = PROTECTION_WORD;
-	context.stackSize = THREAD_STACK_SIZE_WORDS;
+    /* The same formula will be used to allocate stack after thread fault */
+    context.stack = &stackPool[0] + PROTECTION_ZONE_WORDS + \
+    (THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * context.threadNumber;
+    //Place protection at bottom of stack
+    context.stack[0] = PROTECTION_WORD;
+    context.stackSize = THREAD_STACK_SIZE_WORDS;
 #endif //PROTECTED_STACK
 
-	/* Descending full stack */
-	/* Prepare initial context */
-	context.stack = &context.stack[0] + context.stackSize;
+    /* Descending full stack */
+    /* Prepare initial context */
+    context.stack = &context.stack[0] + context.stackSize;
 #if (PROTECTED_STACK)
-	//Place protection at top of stack
-	context.stack[0] = PROTECTION_WORD;
+    //Place protection at top of stack
+    context.stack[0] = PROTECTION_WORD;
 #endif
-	context.stack--;
-	/* pc at the very bottom of the stack */
-	*(context.stack) =
-			reinterpret_cast<uint32_t>(context.threadFunc);
-	/* Let's pretend that r0-r12 are stacked at the beginning */
-	context.stack -= REGS_AMNT;
-	context.stack--;
-	*(context.stack) = context.threadLevel;
+    context.stack--;
+    /* pc at the very bottom of the stack */
+    *(context.stack) =
+            reinterpret_cast<uint32_t>(context.threadFunc);
+    /* Let's pretend that r0-r12 are stacked at the beginning */
+    context.stack -= REGS_AMNT;
+    context.stack--;
+#if(PROTECTED_STACK)
+    *(context.stack) = context.threadLevel;
+#else
+    *(context.stack) = THREAD_PRIVILEGED;
+#endif
 }
 
 void Yield()
 {
-	::LaOS::Core& core = ::LaOS::Core::getInstance();
-	asmYield((void *)&(core.current), (void*)(core.current->next));
+    ::LaOS::Core& core = ::LaOS::Core::getInstance();
+    asmYield((void *)&(core.current), (void*)(core.current->next));
 }
 
 #if(PROTECTED_STACK)
 void Core::Start()
 {
-	ConfigMPU();
-	asmStart((void *)&head);
+    ConfigMPU();
+    asmStart((void *)&head);
 }
 void Core::Supervisor(Core * instance)
 {
-	for(;;)
-	{
+    for(;;)
+    {
 #if(STATIC_STACK_PROTECTION)
-	/* Check stack protection here*/
-	instance->CheckStack();
+    /* Check stack protection here*/
+    instance->CheckStack();
 #endif
 
-	#if(EVENT_DRIVEN) //sleep until new events
-		__DSB();
-		__ISB();
-		__WFI();
-	#endif
-		Yield();
-	}
+    #if(EVENT_DRIVEN) //sleep until new events
+        __DSB();
+        __ISB();
+        __WFI();
+    #endif
+        Yield();
+    }
 }
-#endif
 
 void Core::CheckStack()
 {
-	Context * context = head.prev; //do not check head
-	//Check in reverse order - find overflow before corrosion
-	for( ;context != &head; context = context->prev)
-	{
-		//Check bottom
-		if ( stackPool [ PROTECTION_ZONE_WORDS + \
-			(THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * \
-				context->threadNumber ] != PROTECTION_WORD )
-		{
-			PRINTF("\r\nStack overflow in : '%s'\r\n", context->name);
-			/* This disables all changes in stack
-			 * and restore protection symbols */
-			PrepareStack(*context);
-		}
-		//Check top
-		if( stackPool [ PROTECTION_ZONE_WORDS + \
-			(THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * \
-				context->threadNumber + context->stackSize] != PROTECTION_WORD )
-		{
-			PRINTF("\r\nStack corrosion in : %s\r\n", context->name);
-			PrepareStack(*context); //whose stack was corroded
-			if(context->next != &head)
-				PrepareStack(*context->next); //who corroded stack
-		}
-	}
-	//Check executor's stack
-	assert( (headStack[0] == PROTECTION_WORD) \
-			&& "Executor's stack overflow" );
+    Context * context = head.prev; //do not check head
+    //Check in reverse order - find overflow before corrosion
+    for( ;context != &head; context = context->prev)
+    {
+        //Check bottom
+        if ( stackPool [ PROTECTION_ZONE_WORDS + \
+            (THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * \
+                context->threadNumber ] != PROTECTION_WORD )
+        {
+            PRINTF("\r\nStack overflow in : '%s'\r\n", context->name);
+            /* This disables all changes in stack
+             * and restore protection symbols */
+            PrepareStack(*context);
+        }
+        //Check top
+        if( stackPool [ PROTECTION_ZONE_WORDS + \
+            (THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * \
+                context->threadNumber + context->stackSize] != PROTECTION_WORD )
+        {
+            PRINTF("\r\nStack corrosion in : %s\r\n", context->name);
+            PrepareStack(*context); //whose stack was corroded
+            if(context->next != &head)
+                PrepareStack(*context->next); //who corroded stack
+        }
+    }
+    //Check executor's stack
+    assert( (headStack[0] == PROTECTION_WORD) \
+            && "Core's stack overflow" );
 }
+#endif
 
 /*!
  * Cause everything is allocated statically,
@@ -190,11 +194,11 @@ void Core::CheckStack()
  */
 void Core::Kill( Context& context )
 {
-	/* Remove from linked list */
-	Context * next = context.next;
-	Context * prev = context.prev;
-	next->prev = prev;
-	prev->next = next;
+    /* Remove from linked list */
+    Context * next = context.next;
+    Context * prev = context.prev;
+    next->prev = prev;
+    prev->next = next;
 }
 
 

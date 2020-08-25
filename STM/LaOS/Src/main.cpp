@@ -23,7 +23,8 @@ void threadFunc1(void)
 /* 'stdio' internally uses variable 'errno' in global stack.
  * User should choose between protection and laziness. */
 #if(!PROTECTED_STACK)
-		printf("%s", &D);
+	    char D = 'D';
+		printf("%c.", D);
 #endif
 		debug("D.");
 		Yield();
