@@ -24,6 +24,7 @@ using namespace LaOS;
 
 #define IWDG_SR_TIMEOUT     50
 
+#if (USE_WATCHDOG)
 
 void Core::ConfigWDG()
 {
@@ -63,4 +64,6 @@ void Core::KickDog()
         iwdgRegs->KR = IWDG_KEY_RELOAD;
 }
 
+#endif
+/* EOF */
 

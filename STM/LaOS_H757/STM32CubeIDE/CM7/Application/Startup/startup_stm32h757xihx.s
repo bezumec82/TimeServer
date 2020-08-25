@@ -28,6 +28,10 @@ defined in linker script */
  * @retval : None
 */
 
+//TODO: Create 'cpp' binding
+// unprivileged bss
+// unprivileged data
+// unprivileged stack - initialize all
     .section .reset_handler, "ax",%progbits
   .weak  Reset_Handler
   .type  Reset_Handler, %function

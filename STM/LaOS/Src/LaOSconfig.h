@@ -3,7 +3,8 @@
 #define PROTECTED_STACK                     true
 
 #if (PROTECTED_STACK)
-# define USE_WATCHDOG                       true
+//unsuitable with debug
+# define USE_WATCHDOG                       false
 
 # define WATCHDOG_TIMEOUT_MS                100
 # define STATIC_STACK_PROTECTION            true
@@ -11,7 +12,7 @@
 /* User should provide information about amount of threads
  * he is willing to create. It it will be declared less threads,
  * then attempt to create extra thread will fail. */
-# define THREAD_AMNT                        5
+# define THREAD_AMNT                        16 //overshoot
 # define PROTECTION_ZONE_WORDS              64
 # if (PROTECTION_ZONE_WORDS < 32)
 #  error "Protection zone too low"

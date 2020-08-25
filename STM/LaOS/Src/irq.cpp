@@ -39,7 +39,6 @@ void MemManage_Handler(void)
 		PRINTF("MMFAR = 0x%lx\r\n", scbMmfar);
 	else
 		PRINTF("No memory location info.\r\n");
-	//TODO : send to reset
 	__DMB();
 	SCB->AIRCR = SCB_AIRCR_SYSRESETREQ_Msk |
 			0x5FAUL << SCB_AIRCR_VECTKEY_Pos;

@@ -118,16 +118,18 @@ SECTIONS
 
     /* Atomic variables accessible by unprivileged threads.
      * Must appear first in DTCM due to MPU alignment. 
-     * Can't be placed in any SRAM - ldrex/strex causes hard fault */
-    .unprivileged_atomic :
+     * Can't be placed in any SRAM - ldrex/strex causes hard fault.
+     * huart placed in any SRAM doesn't work.
+     * Keep it as little as possible. */
+    .unprivileged_data :
     {
     . = ALIGN(8);
-    PROVIDE (_upatcstart = .);
-    *(.unprivileged_atomic)
-    PROVIDE (_upatcend = .);
-    . = ALIGN(256);
-        /* Protection gap until data section 
-         * User should consider it for his application. */
+    PROVIDE (_upDataStart = .);
+    *(.unprivileged_data)
+    PROVIDE (_upDataEnd = .);
+    . = ALIGN(512);     /* Set allign according mpu region */
+				        /* Protection gap until data section 
+				         * User should consider it for his application. */
     } >DTCM
 
   /* Initialized data will be copied from FLASH to SRAM */
@@ -176,26 +178,35 @@ SECTIONS
       *(.dma_buffer)
     } >SRAM4
 
-    /* !!! Attention !!! 
+
+   /* !!! Attention !!! 
     The start address of an MPU region 
-    must be multiple of the MPU size */
-    .unprivileged_heap :
-    {
-        . = ALIGN(8192);
-        PROVIDE ( _uphstart = . );
-        . = . + 8192;
-        PROVIDE ( _uphend = . );
-    } > AXI_SRAM2
-    
-    /* Can't be placed in AXI_SRAM - h7 specifics
-     * If placed in AXI_SRAM will work only in debug mode */
+    must be multiple of the MPU size
+    Heap after stack - 
+    heap is known here, stack not */
+     
+    /* Only for unprivileged threads */
     .unprivileged_stack :
     {
         . = ALIGN(8192);
-        PROVIDE ( _sustack = . );
+        PROVIDE ( _upStackStart = . );
         *(.unprivileged_stack)
-        PROVIDE ( _eustack = . );
-    } > SRAM1
+        PROVIDE ( _upStackEnd = . );
+    } > AXI_SRAM2
+    
+    .separator :
+    {
+        . = . + 32;
+    }
+    
+    .unprivileged_heap :
+    {
+        . = ALIGN(8192);
+        PROVIDE ( _upHeapStart = . );
+        . = . + 8192;
+        PROVIDE ( _upHeapEnd = . );
+    } > AXI_SRAM2
+
     
   /* Remove information from the standard libraries */
   /DISCARD/ :

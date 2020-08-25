@@ -7,11 +7,11 @@ using namespace LaOS;
 #if(PROTECTED_STACK)
 /*!
  * Zones will be created :
- * - 1-st read only for unprivileged - full memory map
- * - 2-nd stack of threads     - full access, no execution
- * - 3-rd unprotected heap     - full access, no execution
- * - 4-th peripheral         - full access, no execution
- * - 5-th atomic in DTCM    - full access, no execution
+ * - 1-st full memory map       - read only for unprivileged
+ * - 2-nd stack of threads      - full access, no execution
+ * - 3-rd unprotected heap      - full access, no execution
+ * - 4-th peripheral            - full access, no execution
+ * - 5-th data in DTCM          - full access, no execution
  */
 void Core::ConfigMPU()
 {
@@ -36,36 +36,16 @@ void Core::ConfigMPU()
         /* Enable instruction fetch */
         0                << MPU_RASR_XN_Pos        ; /* bit 28 */
 
-    /*--- Un-privileged heap ---*/
-    uint32_t heapStart = 0;
-    __asm__ volatile ("ldr %[hStart], =_uphstart"
-    :[hStart]"=r"(heapStart)
-    :
-    :"r0");
-    MPU->RNR = RNR++;
-    MPU->RBAR = heapStart;
-    MPU->RASR =
-        MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos                  | /* bit 0 */
-        getRegionSize(UNPROTECTED_HEAP_SIZE) << MPU_RASR_SIZE_Pos   | /* bits 5:1 */
-        0                 << MPU_RASR_SRD_Pos       | /* bits 15:8 */
-        1                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
-        1                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */
-        1                 << MPU_RASR_S_Pos         | /* shareable - it18 */
-        0                 << MPU_RASR_TEX_Pos       | /* bits 21:19 */
-                        /* Full access */
-        ARM_MPU_AP_FULL << MPU_RASR_AP_Pos          | /* bits 26:24 */
-        /* Disable instruction fetch */
-        1                << MPU_RASR_XN_Pos        ; /* bit 28 */
-
-
+    /*--------------------------*/
     /*--- Unprivileged stack ---*/
+    /*--------------------------*/
     uint32_t stackStart = 0;
     uint32_t stackEnd = 0;
-    __asm__ volatile ("ldr %[addr], =_sustack"
+    __asm__ volatile ("ldr %[addr], =_upStackStart"
             :[addr]"=r"(stackStart)
             :
             :"r0");
-    __asm__ volatile ("ldr %[addr], =_eustack"
+    __asm__ volatile ("ldr %[addr], =_upStackEnd"
         :[addr]"=r"(stackEnd)
         :
         :"r0");
@@ -75,7 +55,7 @@ void Core::ConfigMPU()
         MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos                  | /* bit 0 */
         getRegionSize(stackEnd - stackStart) << MPU_RASR_SIZE_Pos   | /* bits 5:1 */
         0                 << MPU_RASR_SRD_Pos       | /* bits 15:8 */
-        1                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
+        0                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
         1                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */
         1                 << MPU_RASR_S_Pos         | /* shareable - it18 */
         0                 << MPU_RASR_TEX_Pos       | /* bits 21:19 */
@@ -83,6 +63,30 @@ void Core::ConfigMPU()
         ARM_MPU_AP_FULL << MPU_RASR_AP_Pos          | /* bits 26:24 */
         /* Disable instruction fetch */
         1                << MPU_RASR_XN_Pos        ; /* bit 28 */
+
+    /*--------------------------*/
+    /*--- Unprivileged heap ---*/
+    /*--------------------------*/
+    uint32_t heapStart = 0;
+    __asm__ volatile ("ldr %[hStart], =_upHeapStart"
+    :[hStart]"=r"(heapStart)
+    :
+    :"r0");
+    MPU->RNR = RNR++;
+    MPU->RBAR = heapStart;
+    MPU->RASR =
+        MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos                  | /* bit 0 */
+        getRegionSize(UNPROTECTED_HEAP_SIZE) << MPU_RASR_SIZE_Pos   | /* bits 5:1 */
+        0                 << MPU_RASR_SRD_Pos       | /* bits 15:8 */
+        0                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
+        1                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */
+        1                 << MPU_RASR_S_Pos         | /* shareable - it18 */
+        0                 << MPU_RASR_TEX_Pos       | /* bits 21:19 */
+                        /* Full access */
+        ARM_MPU_AP_FULL << MPU_RASR_AP_Pos          | /* bits 26:24 */
+        /* Disable instruction fetch */
+        1                << MPU_RASR_XN_Pos        ; /* bit 28 */
+
 
     /*------------------*/
     /*--- Peripheral ---*/
@@ -94,7 +98,7 @@ void Core::ConfigMPU()
         ARM_MPU_REGION_SIZE_512MB << MPU_RASR_SIZE_Pos    | /* bits 5:1 */
         0                 << MPU_RASR_SRD_Pos       | /* bits 15:8 */
         1                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
-        1                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */
+        0                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */
         1                 << MPU_RASR_S_Pos         | /* shareable - it18 */
         0                 << MPU_RASR_TEX_Pos       | /* bits 21:19 */
                         /* Full access */
@@ -103,27 +107,27 @@ void Core::ConfigMPU()
         1                << MPU_RASR_XN_Pos        ; /* bit 28 */
 
     /*---------------------------*/
-    /*--- Unprivileged atomic ---*/
+    /*--- Unprivileged data ---*/
     /*---------------------------*/
-    uint32_t atomicStart = 0;
-    uint32_t atomicEnd = 0;
-    __asm__ volatile ("ldr %[addr], =_upatcstart"
-            :[addr]"=r"(atomicStart)
+    uint32_t upDataStart = 0;
+    uint32_t upDataEnd = 0;
+    __asm__ volatile ("ldr %[addr], =_upDataStart"
+            :[addr]"=r"(upDataStart)
             :
             :"r0");
-    __asm__ volatile ("ldr %[addr], =_upatcend"
-        :[addr]"=r"(atomicEnd)
-        :
-        :"r0");
+    __asm__ volatile ("ldr %[addr], =_upDataEnd"
+            :[addr]"=r"(upDataEnd)
+            :
+            :"r0");
     MPU->RNR = RNR++;
-    MPU->RBAR = atomicStart;
+    MPU->RBAR = upDataStart;
     MPU->RASR =
         MPU_RASR_ENABLE_Msk << MPU_RASR_ENABLE_Pos                  | /* bit 0 */
-        getRegionSize(atomicEnd - atomicStart) << MPU_RASR_SIZE_Pos | /* bits 5:1 */
+        getRegionSize(upDataEnd - upDataStart) << MPU_RASR_SIZE_Pos | /* bits 5:1 */
         0                 << MPU_RASR_SRD_Pos       | /* bits 15:8 */
-        1                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
+        0                 << MPU_RASR_B_Pos         | /* bufferable - bit 16 */
         1                 << MPU_RASR_C_Pos         | /* cacheable - bit17 */
-        1                 << MPU_RASR_S_Pos         | /* shareable - it18 */
+        0                 << MPU_RASR_S_Pos         | /* shareable - it18 */
         0                 << MPU_RASR_TEX_Pos       | /* bits 21:19 */
                         /* Full access */
         ARM_MPU_AP_FULL << MPU_RASR_AP_Pos          | /* bits 26:24 */

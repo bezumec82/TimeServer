@@ -26,9 +26,10 @@ Drawbacks :
     No sane system is supported by the MCU providers in the first place.
 
 Specifics :
- -  Technically you can't use 'stdlib' calls inside un-privileged threads,
+ -  Logically you can't use 'stdlib' calls inside un-privileged threads,
     cause its functions internally set global variable 'errno'
-    on behalf of an unprivileged caller.
+    on behalf of an unprivileged caller. But on practice it is working,
+    until you got an error.
  -  You can use 'stdlib' and other libraries inside privleged threads.
     STM HAL can(must) be used inside unprivileged threads - look tests.
  -  Cause unprivileged stack is separated, its size evaluated at compile-time,

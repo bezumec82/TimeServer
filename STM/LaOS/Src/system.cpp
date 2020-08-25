@@ -40,17 +40,17 @@ void upFree (void * ptr)
 extern int errno;
 caddr_t _sbrk(int incr)
 {
-	extern char uphstart asm("_uphstart");
-	extern char uphend   asm("_uphend");
+	extern char upHeapStart asm("_upHeapStart");
+	extern char upHeapEnd   asm("_upHeapEnd");
 
 	static char * 	curr_heap_end;
 	char * 			prev_heap_end;
 
 	if (curr_heap_end == 0)
-		curr_heap_end = &uphstart;
+		curr_heap_end = &upHeapStart;
 
 	prev_heap_end = curr_heap_end;
-	if (curr_heap_end + incr > &uphend)
+	if (curr_heap_end + incr > &upHeapEnd)
 	{
 		errno = ENOMEM;
 		return (caddr_t) -1;

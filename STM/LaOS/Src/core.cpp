@@ -133,7 +133,6 @@ void Yield()
 #if(PROTECTED_STACK)
 void Core::Start()
 {
-
 #if (USE_WATCHDOG)
     ConfigWDG();
 #endif
