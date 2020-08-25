@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +37,7 @@ void upFree (void * ptr)
 			:"r0");
 }
 
+extern int errno;
 caddr_t _sbrk(int incr)
 {
 	extern char uphstart asm("_uphstart");
@@ -50,6 +52,7 @@ caddr_t _sbrk(int incr)
 	prev_heap_end = curr_heap_end;
 	if (curr_heap_end + incr > &uphend)
 	{
+		errno = ENOMEM;
 		return (caddr_t) -1;
 	}
 	curr_heap_end += incr;

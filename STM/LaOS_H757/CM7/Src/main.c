@@ -177,11 +177,6 @@ Error_Handler();
 /* USER CODE END Boot_Mode_Sequence_2 */
 
   /* USER CODE BEGIN SysInit */
-//	uint8_t * mallocTest1 = malloc(32);
-//	free(mallocTest1);
-//	uint8_t * mallocTest2 = malloc(10);
-//	free(mallocTest2);
-//	*mallocTest1 = 1;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

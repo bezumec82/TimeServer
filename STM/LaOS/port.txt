@@ -34,3 +34,16 @@ to make these structures accessible add macro 'REMOVE_PROTECTION'
 before the definition.
 
 File 'sysmem.c' should be removed. File 'sysmem.cpp' its substitute.
+Heap allocation is made from special separated region - 
+look provided linker script.
+
+To move vector table into AXI_SRAM(0x24000000), uncomment line :
+'#define VECT_TAB_SRAM' in 'void SystemInit (void)'. 
+'.text' section is copied into the same SRAM in the system sturtup code.
+
+#########
+### Notes
+#########
+For H7 series, you can't remove stack to AXI_SRAM (0x24000000 - 0x2407FFFF),
+it will work only in debug mode. Un-explainable - text section works fine.
+

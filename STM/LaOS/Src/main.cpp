@@ -12,7 +12,8 @@
 extern "C" {
 #endif
 
-UNPRIVILEGED_ATOMIC ::Atomic flag __attribute__(( aligned(4) )) = 5;
+UNPRIVILEGED_ATOMIC
+::Atomic flag __attribute__(( aligned(4) )) = 5;
 
 /*! No stack */
 void threadFunc1(void)
@@ -51,10 +52,10 @@ void threadFunc2(void)
 	for(;;)
 	{
 		/*--- Heap test ---*/
-		uint32_t * test1 = (uint32_t *)upMalloc(256);
-		test1++;
-		uint32_t * test2 = (uint32_t *)upMalloc(512);
-		test2++;
+		char * test1 = (char *)upMalloc(256);
+		strcpy(test1, "\r\nun-privileged heap test data 1\r\n");
+		char * test2 = (char *)upMalloc(512);
+		strcpy(test2, "\r\nun-privileged heap test data 1\r\n");
 
 		const char * C = "C."; //scoped variable
 		debug(I);
@@ -70,8 +71,11 @@ void threadFunc2(void)
 		debug(&memAccessible[0]);
 		Yield();
 
-		upFree(--test1);
-		upFree(--test2);
+		/* Check that data is pertained across calls */
+		debug(test1);
+		upFree(test1);
+		debug(test2);
+		upFree(test2);
 
 		loopCounter++;
 		if(loopCounter == 10)
@@ -167,6 +171,7 @@ int test()
 	privContext.threadLevel = THREAD_PRIVILEGED;
 	core.Create(privContext);
 
+	printf("Starting core.\r\n");
 	core.Start();
 	/* execution returns here after full circle */
 	return EXIT_SUCCESS;

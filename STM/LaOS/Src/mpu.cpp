@@ -100,7 +100,7 @@ void Core::ConfigMPU()
 		ARM_MPU_AP_FULL << MPU_RASR_AP_Pos		| /* bits 26:24 */
 		/* Disable instruction fetch */
 		1				<< MPU_RASR_XN_Pos		; /* bit 28*/
-
+#if(1)
 	/*---------------------------*/
 	/*--- Unprivileged atomic ---*/
 	/*---------------------------*/
@@ -128,7 +128,7 @@ void Core::ConfigMPU()
 		ARM_MPU_AP_FULL << MPU_RASR_AP_Pos		| /* bits 26:24 */
 		/* Disable instruction fetch */
 		1				<< MPU_RASR_XN_Pos		; /* bit 28*/
-
+#endif
 	/* Start MPU */
 	ARM_MPU_Enable(0);
 	__DSB();

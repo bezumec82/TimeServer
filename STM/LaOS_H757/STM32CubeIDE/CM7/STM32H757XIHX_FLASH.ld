@@ -116,28 +116,28 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >FLASHA
 
-    /* Atomic variables accessible to unprivileged threads */
+    /* Atomic variables accessible by unprivileged threads.
+     * Must appear first in DTCM due to MPU alignment. 
+     * Can't be placed in any SRAM - ldrex/strex causes hard fault */
     .unprivileged_atomic :
     {
     . = ALIGN(8);
     PROVIDE (_upatcstart = .);
     *(.unprivileged_atomic)
     PROVIDE (_upatcend = .);
-    . = ALIGN(256); 
+    . = ALIGN(256);
         /* Protection gap until data section 
          * User should consider it for his application. */
     } >DTCM
 
-  /* Used by the startup to initialize data */
+  /* Initialized data will be copied from FLASH to SRAM */
   _sidata = LOADADDR(.data);
-  /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  .data :
   {
     . = ALIGN(4);
     _sdata = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
     *(.data*)          /* .data* sections */
-
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
   } >DTCM AT> FLASHA
@@ -169,6 +169,7 @@ SECTIONS
     . = ALIGN(8);
   } >DTCM 
 
+    /* h7 specifics */
     .dma_buffer :
     {
       . = ALIGN(4);
@@ -186,18 +187,15 @@ SECTIONS
         PROVIDE ( _uphend = . );
     } > AXI_SRAM2
     
-    .separator :
-    {
-        . = . + 32;
-    } > AXI_SRAM2
-    
+    /* Can't be placed in AXI_SRAM - h7 specifics
+     * If placed in AXI_SRAM will work only in debug mode */
     .unprivileged_stack :
     {
         . = ALIGN(8192);
         PROVIDE ( _sustack = . );
         *(.unprivileged_stack)
         PROVIDE ( _eustack = . );
-    } > AXI_SRAM2
+    } > SRAM1
     
   /* Remove information from the standard libraries */
   /DISCARD/ :

@@ -1,6 +1,3 @@
-/* Initialization code - at first stage copies
- * all sections from FLASH to SRAM */
-
   .syntax unified
   .cpu cortex-m7
   .fpu softvfp
@@ -24,17 +21,17 @@ defined in linker script */
 
 /**
  * @brief  This is the code that gets called when the processor first
- *         starts execution following a reset event. Only the absolutely
- *         necessary set is performed, after which the application
- *         supplied main() routine is called.
+ *          starts execution following a reset event. Only the absolutely
+ *          necessary set is performed, after which the application
+ *          supplied main() routine is called. 
  * @param  None
- * @retval None
+ * @retval : None
 */
 
-    .section  .reset_handler, "ax",%progbits
+    .section .reset_handler, "ax",%progbits
   .weak  Reset_Handler
   .type  Reset_Handler, %function
-Reset_Handler:  
+Reset_Handler:
   ldr   sp, =_estack      /* set stack pointer */
 
 /* Copy the data segment initializers from flash to SRAM */  
@@ -65,7 +62,7 @@ LoopFillZerobss:
   cmp  r2, r3
   bcc  FillZerobss
 
-#if(1) /* Copy text segment from flash to RAM */
+#if(1) /* Copy text segment from FLASH to RAM */
   movs  r1, #0
   b LoopCopyText
 
@@ -83,7 +80,7 @@ LoopCopyText:
   bcc  CopyText
 #endif
 
-#if(1) /* Copy vector table from flash to RAM */
+#if(1) /* Copy vector table from FLASH to RAM */
   movs  r1, #0
   b LoopCopyVTable
 
@@ -109,9 +106,6 @@ LoopCopyVTable:
   bl  main
 
   bx  lr
-  LibCinitArrayConst: .word __libc_init_array
-  SystemInitConst:    .word SystemInit
-  MainConst:          .word main
 .size  Reset_Handler, .-Reset_Handler
 
 /**
