@@ -133,6 +133,10 @@ void Yield()
 #if(PROTECTED_STACK)
 void Core::Start()
 {
+
+#if (USE_WATCHDOG)
+    ConfigWDG();
+#endif
     ConfigMPU();
     asmStart((void *)&head);
 }
@@ -140,6 +144,9 @@ void Core::Supervisor(Core * instance)
 {
     for(;;)
     {
+#if (USE_WATCHDOG)
+    instance->KickDog();
+#endif
 #if(STATIC_STACK_PROTECTION)
     /* Check stack protection here*/
     instance->CheckStack();

@@ -3,6 +3,9 @@
 #define PROTECTED_STACK                     true
 
 #if (PROTECTED_STACK)
+# define USE_WATCHDOG                       true
+
+# define WATCHDOG_TIMEOUT_MS                100
 # define STATIC_STACK_PROTECTION            true
 # define THREAD_STACK_SIZE_WORDS            256
 /* User should provide information about amount of threads

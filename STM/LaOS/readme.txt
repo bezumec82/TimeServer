@@ -1,20 +1,23 @@
 This is a simple switching mechanism for Cortex-M microcontrollers.
+
 Main features :
- -  Stack overflow protection. Supervisor check state of stack
-    of all threads at each cycle.
+ -  It is not universal - it is using almost all Cortex-M features.
+ -  Stack overflow protection. Supervisor check state of the stack
+    of all threads at each cycle. MPU protects from other errors.
  -  Utilization of separate stack pointers.
  -  SVC handler with codes recognition - 
     user can add its codes to process in function 'SVC_Handler_C' 
     in sysCall.cpp, or redefine it completely.
  -  MPU support - threads are running in unprivileged mode.
-    .text section is accessible in read only mode,
-    threads stack is removed to separate section .unprivileged_stack -
-    look '...FLASH.ld' file.
- -  Two types of threads could be created - privileged and unprivileged.
- -  Support 'true' atomic and semaphore based on 'ldrex'/'strex'
-Drawback :
- -  If you want to use it, you should think
- -  Couse most of the modern MCU market is consists of solutions 
+    '.text' section is accessible in read only mode,
+    threads stack is removed to separate section '.unprivileged_stack' -
+    look '...FLASH.ld' file. Heap has its separate place.
+ -  Two types of threads can be created - privileged and unprivileged.
+ -  Support 'true' atomic and counting semaphore based on 'ldrex'/'strex'.
+ 
+Drawbacks :
+ -  If you want to use it, you should think.
+ -  Cause most of the modern MCU market is consists of solutions
     based on Cortex-Mx cores, no other ports/MCU support is provided.
     And I have no plans to support computer history.
  -  In the present state, no 'cmake' or 'make' or other building tools
@@ -25,10 +28,10 @@ Drawback :
 Specifics :
  -  Technically you can't use 'stdlib' calls inside un-privileged threads,
     cause its functions internally set global variable 'errno'
-    on behalf of an un-privileged caller.
+    on behalf of an unprivileged caller.
  -  You can use 'stdlib' and other libraries inside privleged threads.
     STM HAL can(must) be used inside unprivileged threads - look tests.
  -  Cause unprivileged stack is separated, its size evaluated at compile-time,
-    the user should say how many thread he is willing to create in 'LaOSconfig.h'.
+    the user must say how many threads he is willing to create in 'LaOSconfig.h'.
     More than necessary can be declared, but it is wasteful.
 

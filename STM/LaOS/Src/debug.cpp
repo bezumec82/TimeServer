@@ -1,6 +1,7 @@
 #include "debug.hpp"
 
 extern UART_HandleTypeDef huart1;
+
 UART_HandleTypeDef * debugUart = &huart1;
 
 void debug(const char * msg)

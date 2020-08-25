@@ -81,8 +81,14 @@ void threadFunc2(void)
 		loopCounter++;
 		if(loopCounter == 10)
 		{
+#if(0)
 			debug("Memory fault in ..3 ..2 ..1\r\n");
 			memcpy(memFault, arr, strlen(arr));
+#else
+			debug("Waiting for WDG.\r\n");
+			while(1)
+			    ;
+#endif
 		}
 	} //end for
 }
