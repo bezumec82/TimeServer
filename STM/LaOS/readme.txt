@@ -14,6 +14,11 @@ Main features :
     look '...FLASH.ld' file. Heap has its separate place.
  -  Two types of threads can be created - privileged and unprivileged.
  -  Support 'true' atomic and counting semaphore based on 'ldrex'/'strex'.
+ -  Supervisor can work in several modes :
+    - with wdg - if you forget 'Yield' or stuck - reset will happen
+    - with SysTick - event driven system. 
+      Supervisor put system in sleep, SysTick or any other IRQ awakens it.
+   
  
 Drawbacks :
  -  If you want to use it, you should think.
@@ -35,4 +40,3 @@ Specifics :
  -  Cause unprivileged stack is separated, its size evaluated at compile-time,
     the user must say how many threads he is willing to create in 'LaOSconfig.h'.
     More than necessary can be declared, but it is wasteful.
-

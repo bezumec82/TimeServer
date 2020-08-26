@@ -51,6 +51,8 @@ void Core::ConfigMPU()
         :[addr]"=r"(stackEnd)
         :
         :"r0");
+    PRINTF("MPU : _upStackStart = 0x%lx, _upStackEnd = 0x%lx\r\n",
+            stackStart, stackEnd);
     MPU->RNR = RNR++;
     MPU->RBAR = stackStart;
     MPU->RASR =
@@ -75,6 +77,7 @@ void Core::ConfigMPU()
     :[hStart]"=r"(heapStart)
     :
     :"r0");
+    PRINTF("MPU : _upHeapStart = 0x%lx\r\n", heapStart);
     MPU->RNR = RNR++;
     MPU->RBAR = heapStart;
     MPU->RASR =
@@ -129,6 +132,8 @@ void Core::ConfigMPU()
             :[addr]"=r"(upBssEnd)
             :
             :"r0");
+    PRINTF("MPU : _upDataStart = 0x%lx, _upBssEnd = 0x%lx\r\n",
+            upDataStart, upBssEnd);
     MPU->RNR = RNR++;
     MPU->RBAR = upDataStart;
     MPU->RASR =

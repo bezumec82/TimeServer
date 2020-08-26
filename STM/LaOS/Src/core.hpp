@@ -22,9 +22,9 @@
 #include "LaOSmain.h"
 
 #include "wdg.hpp"
+#include "debug.hpp"
 
 #define TEST                true
-#define PRINTF(text, ...)   printf(text, ##__VA_ARGS__)
 #define ALIGN(size)         size &= ( ~( sizeof(void*) - 1 ) );
 #define REGS_AMNT           8 /* r4-r11 */
 

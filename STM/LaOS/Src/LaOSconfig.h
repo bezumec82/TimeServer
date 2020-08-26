@@ -3,10 +3,17 @@
 #define PROTECTED_STACK                     true
 
 #if (PROTECTED_STACK)
-//unsuitable with debug
-# define USE_WATCHDOG                       true
 
+//unsuitable with debug
+# define USE_WATCHDOG                       false
 # define WATCHDOG_TIMEOUT_MS                100
+
+/* To put system in sleep - event driven system.
+ * Incompatible with stepped debug. */
+# define EVENT_DRIVEN_SYSTEM                false
+# define USE_SYSTICK                        true
+# define SYSTICK_PERIOD_MS                  10
+
 # define STATIC_STACK_PROTECTION            true
 # define THREAD_STACK_SIZE_WORDS            256
 /* User should provide information about amount of threads
@@ -29,4 +36,9 @@
 
 #define UNPROTECTED_HEAP_SIZE               8192
 
-#endif
+#endif //PROTECTED_STACK
+
+//Makes colored output
+#define LINUX_TERMINAL
+//Un-comment to disable core debug
+//#define NDEBUG

@@ -46,6 +46,12 @@ void MemManage_Handler(void)
     {}
 }
 
+void SysTick_Handler(void)
+{
+    //wake up system
+    __SEV(); //just in case - bug in M3
+}
+
 #ifdef __cplusplus
 }
 #endif

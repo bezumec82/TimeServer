@@ -25,8 +25,10 @@ In the present moment, only STM32H575 is supported.
 Core of OS is realized as signleton pattern,
 as far as you include it in your project - you have it.
 
-If you use STMCubeMX disable code generation for 'MemManage_Handler'
-and 'SVC_Handler'.
+If you use STMCubeMX disable code generation for 
+ - MemManage_Handler
+ - SVC_Handler
+ - SysTick_Handler
 
 STM32 HAL uses global structures to access peripheral - 
 to make these structures accessible to un-privileged threads

@@ -66,7 +66,7 @@ void Core::Create( Context& context )
 
     if(threadCount == THREAD_AMNT)
     {
-        PRINTF("Thread amount is bigger than declared.\r\n");
+        PRINT_ERR("Thread amount is bigger than declared.\r\n");
         return;
     }
 #else
@@ -136,6 +136,19 @@ void Core::Start()
 #if (USE_WATCHDOG)
     ConfigWDG();
 #endif
+
+#if ( (USE_SYSTICK) && (EVENT_DRIVEN_SYSTEM) )
+    uint32_t ticks = (SystemCoreClock / 1000) * SYSTICK_PERIOD_MS;
+    if( SysTick_Config(ticks) )
+    {
+        PRINT_ERR(  "Can't configure SysTick timer. \r\n"
+                    "System will sleep forever.\r\n"
+                    "ticks = %ld > %ld == SysTick_LOAD_RELOAD_Msk\r\n",
+                    ticks, SysTick_LOAD_RELOAD_Msk);
+        return;
+    }
+#endif
+
     ConfigMPU();
     asmStart((void *)&head);
 }
@@ -151,10 +164,16 @@ void Core::Supervisor(Core * instance)
     instance->CheckStack();
 #endif
 
-    #if(EVENT_DRIVEN) //sleep until new events
+    #if(EVENT_DRIVEN_SYSTEM) //sleep until new events
+        PRINTF_COL(YEL, "Sleep.\r\n");
+        HAL_SuspendTick();
         __DSB();
         __ISB();
-        __WFI();
+        __SEV(); //Set event register if it is not set
+        __WFE(); //Clear event register
+        __WFE(); //Wait for event
+        PRINTF_COL(GRN, "Awaken.\r\n");
+        HAL_ResumeTick(); //for HAL library functionality
     #endif
         Yield();
     }
@@ -171,7 +190,7 @@ void Core::CheckStack()
             (THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * \
                 context->threadNumber ] != PROTECTION_WORD )
         {
-            PRINTF("\r\nStack overflow in : '%s'\r\n", context->name);
+            PRINT_ERR("\r\nStack overflow in : '%s'\r\n", context->name);
             /* This disables all changes in stack
              * and restore protection symbols */
             PrepareStack(*context);
@@ -181,7 +200,7 @@ void Core::CheckStack()
             (THREAD_STACK_SIZE_WORDS  + PROTECTION_ZONE_WORDS) * \
                 context->threadNumber + context->stackSize] != PROTECTION_WORD )
         {
-            PRINTF("\r\nStack corrosion in : %s\r\n", context->name);
+            PRINT_ERR("\r\nStack corrosion in : %s\r\n", context->name);
             PrepareStack(*context); //whose stack was corroded
             if(context->next != &head)
                 PrepareStack(*context->next); //who corroded stack
