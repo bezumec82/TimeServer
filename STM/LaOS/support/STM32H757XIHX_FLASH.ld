@@ -65,7 +65,7 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
-    _startText = .;
+    _textStart = .;
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
@@ -76,7 +76,7 @@ SECTIONS
     KEEP (*(.fini))
 
     . = ALIGN(4);
-    _endText = .;        /* define a global symbols at end of code */
+    _textEnd = .;
   } >AXI_SRAM1 AT> FLASHA
 
   /* Constant data goes into FLASH */
@@ -116,15 +116,16 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
   } >FLASHA
 
-    /* Atomic variables accessible by unprivileged threads.
-     * Must appear first in DTCM due to MPU alignment. 
+    /* Atomic variables accessible by unprivileged threads
+     * must appear first in DTCM due to MPU alignment. 
      * Can't be placed in any SRAM - ldrex/strex causes hard fault.
-     * huart placed in any SRAM doesn't work.
+     * 'huart' placed in any SRAM doesn't work.
+     *
      * Keep it as little as possible. */
     _upDataFlash = LOADADDR(.unprivileged_data);
+    . = ALIGN(4);
     .unprivileged_data :
     {
-    . = ALIGN(4);
     PROVIDE (_upDataStart = .);
     *(.unprivileged_data)
     PROVIDE (_upDataEnd = .);
@@ -173,8 +174,7 @@ SECTIONS
   ._user_heap_stack :
   {
     . = ALIGN(8);
-    PROVIDE ( end = . );
-    PROVIDE ( _end = . );
+    PROVIDE ( end = . ); /* Used in _sbrk */
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
@@ -190,9 +190,9 @@ SECTIONS
 
    /* !!! Attention !!! 
     The start address of an MPU region 
-    must be multiple of the MPU size
+    must be multiple of the MPU size.
     Heap after stack - 
-    heap is known here, stack not */
+    heap is known at this point, stack not. */
      
     /* Only for unprivileged threads */
     .unprivileged_stack :
@@ -203,6 +203,8 @@ SECTIONS
         PROVIDE ( _upStackEnd = . );
     } > AXI_SRAM2
     
+    /* Gap for MPU. It separates stack from heap.
+     * Its size will depend. */
     .separator :
     {
         . = . + 32;

@@ -6,18 +6,33 @@
 .global  g_pfnVectors
 .global  Default_Handler
 
-/* start address for the initialization values of the .data section. 
-defined in linker script */
-.word  _sidata
-/* start address for the .data section. defined in linker script */  
-.word  _sdata
-/* end address for the .data section. defined in linker script */
-.word  _edata
-/* start address for the .bss section. defined in linker script */
-.word  _sbss
-/* end address for the .bss section. defined in linker script */
-.word  _ebss
-/* stack used for SystemInit_ExtMemCtl; always internal RAM used */
+/* Values from ld script */
+/* System core bss */
+.word _bssStart
+.word _bssEnd
+/* Threads bss */
+.word _upBssStart
+.word _upBssEnd
+
+/* Vector table */
+.word _vtFlash
+.word _vtStart
+.word _vtEnd
+
+/* System core data */
+.word _dataFlash
+.word _dataStart
+.word _dataEnd
+
+/* Threads data */
+.word _upDataFlash
+.word _upDataStart
+.word _upDataEnd
+
+/* Program text */
+.word _textFlash
+.word _textStart
+.word _textEnd
 
 /**
  * @brief  This is the code that gets called when the processor first
@@ -28,28 +43,27 @@ defined in linker script */
  * @retval : None
 */
 
-//TODO: Create 'cpp' binding
-// unprivileged bss
-// unprivileged data
-// unprivileged stack - initialize all
     .section .reset_handler, "ax",%progbits
   .weak  Reset_Handler
   .type  Reset_Handler, %function
 Reset_Handler:
-  ldr   sp, =_estack      /* set stack pointer */
+  /* set stack pointer */
+  ldr   sp, =_estack
 
+  /* Zeroing bss section */
   ldr r0, =_bssStart
   ldr r1, =_bssEnd
   bl zeroOutSection
 
+  /* Zeroing unprotected bss section */
   ldr r0, =_upBssStart
   ldr r1, =_upBssEnd
   bl zeroOutSection
 
   /* Copy text segment from FLASH to RAM */
   ldr r0, =_textFlash
-  ldr r1, =_startText
-  ldr r2, =_endText
+  ldr r1, =_textStart
+  ldr r2, =_textEnd
   bl copySection
 
   /* Copy vector table from FLASH to RAM */
@@ -68,8 +82,6 @@ Reset_Handler:
   ldr r1, =_upDataStart
   ldr r2, =_upDataEnd
   bl copySection
-
-
 
 /* Call the clock system intitialization function.*/
   bl  SystemInit
@@ -748,5 +760,5 @@ g_pfnVectors:
    .weak      WAKEUP_PIN_IRQHandler            
    .thumb_set WAKEUP_PIN_IRQHandler,Default_Handler 
    
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/        
+/* EOF */
  

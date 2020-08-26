@@ -4,8 +4,8 @@
 extern "C" {
 #endif
 
-#define UNPRIVILEGED_DATA   __attribute__((section (".unprivileged_data")))
-#define UNPRIVILEGED_BSS    __attribute__((section (".unprivileged_bss")))
+#define UNPRIVILEGED_DATA   __attribute__(( section (".unprivileged_data") ))
+#define UNPRIVILEGED_BSS    __attribute__(( section (".unprivileged_bss") ))
 
 /* Your cpp function should be exported to C code from here */
 int test();
@@ -22,7 +22,6 @@ void MemManage_Handler(void);
 void zeroOutSection(uint32_t * , uint32_t * );
 void copySection(uint32_t * ,
         uint32_t * , uint32_t * );
-
 
 #include <stdio.h>
 caddr_t _sbrk(int incr);

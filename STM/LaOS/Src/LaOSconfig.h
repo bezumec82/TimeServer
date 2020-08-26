@@ -4,7 +4,7 @@
 
 #if (PROTECTED_STACK)
 //unsuitable with debug
-# define USE_WATCHDOG                       false
+# define USE_WATCHDOG                       true
 
 # define WATCHDOG_TIMEOUT_MS                100
 # define STATIC_STACK_PROTECTION            true
