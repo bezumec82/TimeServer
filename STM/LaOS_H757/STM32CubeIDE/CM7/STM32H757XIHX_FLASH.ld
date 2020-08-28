@@ -208,7 +208,7 @@ SECTIONS
     .separator :
     {
         . = . + 32;
-    } > AXI_SRAM2
+    }
     
     .unprivileged_heap :
     {

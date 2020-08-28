@@ -26,12 +26,12 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef        hsystick;
+TIM_HandleTypeDef        htim2;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief  This function configures the SysTick as a time base source.
+  * @brief  This function configures the TIM2 as a time base source.
   *         The time source is configured  to have 1ms time base with a dedicated
   *         Tick interrupt priority.
   * @note   This function is called  automatically at the beginning of program after
@@ -45,40 +45,40 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
   uint32_t              uwTimclock = 0;
   uint32_t              uwPrescalerValue = 0;
   uint32_t              pFLatency;
-  /*Configure the SysTick IRQ priority */
-  HAL_NVIC_SetPriority(TIM1_UP_IRQn, TickPriority ,0);
+  /*Configure the TIM2 IRQ priority */
+  HAL_NVIC_SetPriority(TIM2_IRQn, TickPriority ,0);
 
-  /* Enable the SysTick global Interrupt */
-  HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
-  /* Enable SysTick clock */
-  __HAL_RCC_SysTick_CLK_ENABLE();
+  /* Enable the TIM2 global Interrupt */
+  HAL_NVIC_EnableIRQ(TIM2_IRQn);
+  /* Enable TIM2 clock */
+  __HAL_RCC_TIM2_CLK_ENABLE();
 
   /* Get clock configuration */
   HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
 
-  /* Compute SysTick clock */
-  uwTimclock = HAL_RCC_GetPCLK2Freq();
+  /* Compute TIM2 clock */
+  uwTimclock = 2*HAL_RCC_GetPCLK1Freq();
 
-  /* Compute the prescaler value to have SysTick counter clock equal to 1MHz */
+  /* Compute the prescaler value to have TIM2 counter clock equal to 1MHz */
   uwPrescalerValue = (uint32_t) ((uwTimclock / 1000000) - 1);
 
-  /* Initialize SysTick */
-  hsystick.Instance = SysTick;
+  /* Initialize TIM2 */
+  htim2.Instance = TIM2;
 
   /* Initialize TIMx peripheral as follow:
-  + Period = [(SysTickCLK/1000) - 1]. to have a (1/1000) s time base.
+  + Period = [(TIM2CLK/1000) - 1]. to have a (1/1000) s time base.
   + Prescaler = (uwTimclock/1000000 - 1) to have a 1MHz counter clock.
   + ClockDivision = 0
   + Counter direction = Up
   */
-  hsystick.Init.Period = (1000000 / 1000) - 1;
-  hsystick.Init.Prescaler = uwPrescalerValue;
-  hsystick.Init.ClockDivision = 0;
-  hsystick.Init.CounterMode = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_Base_Init(&hsystick) == HAL_OK)
+  htim2.Init.Period = (1000000 / 1000) - 1;
+  htim2.Init.Prescaler = uwPrescalerValue;
+  htim2.Init.ClockDivision = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  if(HAL_TIM_Base_Init(&htim2) == HAL_OK)
   {
     /* Start the TIM time Base generation in interrupt mode */
-    return HAL_TIM_Base_Start_IT(&hsystick);
+    return HAL_TIM_Base_Start_IT(&htim2);
   }
 
   /* Return function status */
@@ -87,26 +87,26 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 
 /**
   * @brief  Suspend Tick increment.
-  * @note   Disable the tick increment by disabling SysTick update interrupt.
+  * @note   Disable the tick increment by disabling TIM2 update interrupt.
   * @param  None
   * @retval None
   */
 void HAL_SuspendTick(void)
 {
-  /* Disable SysTick update Interrupt */
-  __HAL_TIM_DISABLE_IT(&hsystick, TIM_IT_UPDATE);
+  /* Disable TIM2 update Interrupt */
+  __HAL_TIM_DISABLE_IT(&htim2, TIM_IT_UPDATE);
 }
 
 /**
   * @brief  Resume Tick increment.
-  * @note   Enable the tick increment by Enabling SysTick update interrupt.
+  * @note   Enable the tick increment by Enabling TIM2 update interrupt.
   * @param  None
   * @retval None
   */
 void HAL_ResumeTick(void)
 {
-  /* Enable SysTick Update interrupt */
-  __HAL_TIM_ENABLE_IT(&hsystick, TIM_IT_UPDATE);
+  /* Enable TIM2 Update interrupt */
+  __HAL_TIM_ENABLE_IT(&htim2, TIM_IT_UPDATE);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

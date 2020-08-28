@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * File Name          : stm32h7xx_hal_msp.c
-  * Description        : This file provides code for the MSP Initialization 
+  * Description        : This file provides code for the MSP Initialization
   *                      and de-Initialization codes.
   ******************************************************************************
   * @attention
@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN Define */
- 
+
 /* USER CODE END Define */
 
 /* Private macro -------------------------------------------------------------*/
@@ -93,11 +93,11 @@ void HAL_DFSDM_ChannelMspInit(DFSDM_Channel_HandleTypeDef* hdfsdm_channel)
   /* USER CODE END DFSDM1_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_DFSDM1_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOC_CLK_ENABLE();
-    /**DFSDM1 GPIO Configuration    
+    /**DFSDM1 GPIO Configuration
     PC2     ------> DFSDM1_CKOUT
-    PC3     ------> DFSDM1_DATIN1 
+    PC3     ------> DFSDM1_DATIN1
     */
     GPIO_InitStruct.Pin = DFSDM_CLK_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -136,10 +136,10 @@ void HAL_DFSDM_ChannelMspDeInit(DFSDM_Channel_HandleTypeDef* hdfsdm_channel)
   /* USER CODE END DFSDM1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_DFSDM1_CLK_DISABLE();
-  
-    /**DFSDM1 GPIO Configuration    
+
+    /**DFSDM1 GPIO Configuration
     PC2     ------> DFSDM1_CKOUT
-    PC3     ------> DFSDM1_DATIN1 
+    PC3     ------> DFSDM1_DATIN1
     */
     HAL_GPIO_DeInit(GPIOC, DFSDM_CLK_Pin|DFSM_DAT1_Pin);
 
@@ -168,11 +168,11 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef* heth)
     __HAL_RCC_ETH1MAC_CLK_ENABLE();
     __HAL_RCC_ETH1TX_CLK_ENABLE();
     __HAL_RCC_ETH1RX_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOG_CLK_ENABLE();
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    /**ETH GPIO Configuration    
+    /**ETH GPIO Configuration
     PG11     ------> ETH_TX_EN
     PG12     ------> ETH_TXD1
     PG13     ------> ETH_TXD0
@@ -181,7 +181,7 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef* heth)
     PA1     ------> ETH_REF_CLK
     PA7     ------> ETH_CRS_DV
     PC4     ------> ETH_RXD0
-    PC5     ------> ETH_RXD1 
+    PC5     ------> ETH_RXD1
     */
     GPIO_InitStruct.Pin = RMII_TX_EN_Pin|RMII_TXD1_Pin|RMII_TXD0_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -228,8 +228,8 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* heth)
     __HAL_RCC_ETH1MAC_CLK_DISABLE();
     __HAL_RCC_ETH1TX_CLK_DISABLE();
     __HAL_RCC_ETH1RX_CLK_DISABLE();
-  
-    /**ETH GPIO Configuration    
+
+    /**ETH GPIO Configuration
     PG11     ------> ETH_TX_EN
     PG12     ------> ETH_TXD1
     PG13     ------> ETH_TXD0
@@ -238,7 +238,7 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* heth)
     PA1     ------> ETH_REF_CLK
     PA7     ------> ETH_CRS_DV
     PC4     ------> ETH_RXD0
-    PC5     ------> ETH_RXD1 
+    PC5     ------> ETH_RXD1
     */
     HAL_GPIO_DeInit(GPIOG, RMII_TX_EN_Pin|RMII_TXD1_Pin|RMII_TXD0_Pin);
 
