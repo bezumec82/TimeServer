@@ -1,0 +1,3 @@
+[submodule "STM/LaOS"]
+	path = STM/LaOS
+	url = git@github.com:bezumec82/LaOS.git
