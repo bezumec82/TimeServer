@@ -1,3 +1,6 @@
+sw4stm32 j-link support
+install Eclipse Embedded CDT plugin
+
 Set path to JLink GDB :
 Eclipse menu -> Window -> Preferences -> MCU -> Global SEGGER J-Link Path
 /usr/bin
@@ -5,6 +8,7 @@ JLinkGDBServerCLExe
 
 Device name : 
 https://www.segger.com/products/debug-probes/j-link/technology/cpus-and-devices/overview-of-supported-cpus-and-devices/
+
 STM32F746NG
 
 Test :
@@ -13,7 +17,21 @@ JLinkGDBServerCLExe -if swd -device STM32F746NG \
 -port 2331 -swoport 2332 -telnetport 2333 \
 -vd -ir -localhostonly 1 -singlerun -strict -nogui
 
-Trouble :
+###########
+### Trouble
+###########
+Error while launching command: gdb --version
+Download arm toolchain :
+https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads
+Debug Configuratons -> GDB SEGGER J-Link Debugging -> xxxxx -> Debugger -> GDB Clietn Setup
+change 
+${cross_prefix}gdb${cross_suffix}
+to 
+xxx/gcc-arm-none-eabi-xxx/bin/arm-none-eabi-gdb
+
+###########
+### Trouble
+###########
 Truncated register 16 in remote 'g' packet
 
 Eclipse menu -> Window -> Preferences -> C/C++ -> Build -> Build variables
@@ -27,7 +45,9 @@ to
 Eclipse menu -> Window -> Preferences -> C/C++ -> Debug -> GDB -> GDB debugger :
 /media/constantine/Install/STM/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gdb
 
+###########
 ### Trouble
+###########
 Execution end up in 'Default_Handler'
 # Cause
 Not generated ISR for HAL timer.
@@ -41,7 +61,9 @@ weak void TIM1_UP_IRQHandler(void)
   HAL_TIM_IRQHandler(&htim1);
 }
 
+###########
 ### Trouble
+###########
 execution stopped
 portFORCE_INLINE static void vPortRaiseBASEPRI( void ) ...
 
